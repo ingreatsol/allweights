@@ -10,8 +10,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url "https://jitpack.io"}
     }
 }
-rootProject.name = "allweights"
+rootProject.name = "Allweights library"
 include ':app'
-include ':allweightslibrary'
+include ':Allweights'

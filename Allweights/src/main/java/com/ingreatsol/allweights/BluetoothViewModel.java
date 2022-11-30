@@ -1,9 +1,11 @@
 package com.ingreatsol.allweights;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -31,6 +33,7 @@ public class BluetoothViewModel extends ViewModel {
     private String mDeviceAddress;
     public Integer type;
     public BluetoothLeService mBluetoothLeService;
+    private BluetoothAdapter mBluetoothAdapter;
     public BluetoothGattCharacteristic mNotifyCharacteristic;
     boolean mConnected = false;
     private String entrada = "";
@@ -282,4 +285,11 @@ public class BluetoothViewModel extends ViewModel {
         }
     }
 
+    public BluetoothAdapter getmBluetoothAdapter(Activity activity) {
+        if (mBluetoothAdapter == null) {
+            final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+            mBluetoothAdapter = bluetoothManager.getAdapter();
+        }
+        return mBluetoothAdapter;
+    }
 }

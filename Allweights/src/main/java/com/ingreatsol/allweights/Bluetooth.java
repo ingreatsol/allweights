@@ -1,15 +1,16 @@
 package com.ingreatsol.allweights;
 
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.AsyncTask;
 
+import androidx.annotation.RequiresPermission;
+
 import java.io.IOException;
 import java.util.UUID;
 
-public class Bluetooth extends AsyncTask<Void , Void, Void>
+class Bluetooth extends AsyncTask<Void , Void, Void>
 {
     BluetoothSocket btSocket = null;
     private boolean isBtConnected = false;
@@ -20,6 +21,10 @@ public class Bluetooth extends AsyncTask<Void , Void, Void>
     private final Bluetooth_listener listener;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
+    @RequiresPermission(allOf = {
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.BLUETOOTH_CONNECT"
+    })
     public Bluetooth(Bluetooth_listener _listener, String ADDRESS){
         this.listener = _listener;
         this.address = ADDRESS;
@@ -40,7 +45,10 @@ public class Bluetooth extends AsyncTask<Void , Void, Void>
     protected void onPreExecute() {
     }
 
-    @SuppressLint("MissingPermission")
+    @RequiresPermission(allOf = {
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.BLUETOOTH_CONNECT"
+    })
     @Override
     protected Void doInBackground(Void... params) {
         try {
@@ -48,7 +56,7 @@ public class Bluetooth extends AsyncTask<Void , Void, Void>
                 myBluetooth = BluetoothAdapter.getDefaultAdapter();
                 dispositivo = myBluetooth.getRemoteDevice(this.address);
                 btSocket = dispositivo.createInsecureRfcommSocketToServiceRecord(myUUID);
-                BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+                myBluetooth.cancelDiscovery();
                 btSocket.connect();
                 ConnectSuccess = true;
             }

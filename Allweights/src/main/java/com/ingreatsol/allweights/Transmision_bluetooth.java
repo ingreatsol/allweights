@@ -3,9 +3,11 @@ package com.ingreatsol.allweights;
 import android.bluetooth.BluetoothSocket;
 import android.os.AsyncTask;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 
-public class Transmision_bluetooth extends AsyncTask<String, String, Void>  // UI thread
+class Transmision_bluetooth extends AsyncTask<String, String, Void>  // UI thread
 {
     byte[] buffer = new byte[1024];
     int bytes;
@@ -36,7 +38,7 @@ public class Transmision_bluetooth extends AsyncTask<String, String, Void>  // U
         return null;
     }
 
-    protected void onProgressUpdate(String... values) {
+    protected void onProgressUpdate(@NonNull String... values) {
         bluetooth_listener.OnResult(values[0]);
     }
 

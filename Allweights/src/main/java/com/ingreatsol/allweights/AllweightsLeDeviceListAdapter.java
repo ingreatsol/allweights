@@ -16,7 +16,7 @@ import androidx.annotation.RequiresPermission;
 
 import java.util.ArrayList;
 
-public class LeDeviceListAdapter extends BaseAdapter {
+public class AllweightsLeDeviceListAdapter extends BaseAdapter {
     private final ArrayList<BluetoothDevice> mLeDevices;
     protected Activity activity;
     private final @LayoutRes int mResource;
@@ -24,8 +24,8 @@ public class LeDeviceListAdapter extends BaseAdapter {
     private final @IdRes int device_name;
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    public LeDeviceListAdapter(Activity activity, @LayoutRes int layout,
-                               @IdRes int device_address, @IdRes int device_name) {
+    public AllweightsLeDeviceListAdapter(Activity activity, @LayoutRes int layout,
+                                         @IdRes int device_address, @IdRes int device_name) {
         this.activity = activity;
         this.mLeDevices = new ArrayList<>();
         this.mResource = layout;

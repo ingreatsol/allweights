@@ -3,12 +3,12 @@ package com.ingreatsol.allweights;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 
-public interface Bluetooth_listener {
+interface Bluetooth_listener {
 
-    public void onFinisched();
+    void onFinisched();
 
-    public void OnResult(String result);
+    void OnResult(String result);
 
-    public void initask(BluetoothSocket bluetoothSocket, BluetoothDevice bluetoothDevice);
+    void initask(BluetoothSocket bluetoothSocket, BluetoothDevice bluetoothDevice);
 
 }

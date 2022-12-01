@@ -24,16 +24,15 @@ import androidx.annotation.RequiresPermission;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.ingreatsol.allweights.exceptions.AllweightsException;
 
-public class EscanearBluetoothViewModel extends ViewModel{
-    public static final String TAG = EscanearBluetoothViewModel.class.getSimpleName();
+public class AllweightsScan {
+    public static final String TAG = AllweightsScan.class.getSimpleName();
 
     private final MutableLiveData<Boolean> mScanning = new MutableLiveData<>(false);
     private BluetoothAdapter mBluetoothAdapter;
-    private LeDeviceListAdapter mLeDeviceListAdapter;
+    private AllweightsLeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     public static final long SCAN_PERIOD = 10000;
     private final ScanCallback leScanCallback = new ScanCallback() {
@@ -75,13 +74,6 @@ public class EscanearBluetoothViewModel extends ViewModel{
         return mScanning;
     }
 
-    public boolean IsEnableBluetoothAdapter() {
-        if (mBluetoothAdapter != null) {
-            return mBluetoothAdapter.isEnabled();
-        }
-        return false;
-    }
-
     @RequiresPermission("android.permission.BLUETOOTH_SCAN")
     public void stopScan() {
         if (Boolean.TRUE.equals(mScanning.getValue())) {
@@ -105,11 +97,11 @@ public class EscanearBluetoothViewModel extends ViewModel{
     public void setAdapter(Activity activity, @LayoutRes int layout,
                                    @IdRes int device_address, @IdRes int device_name) {
         if (mLeDeviceListAdapter == null) {
-            mLeDeviceListAdapter = new LeDeviceListAdapter(activity, layout, device_address, device_name);
+            mLeDeviceListAdapter = new AllweightsLeDeviceListAdapter(activity, layout, device_address, device_name);
         }
     }
 
-    public LeDeviceListAdapter getmLeDeviceListAdapter() {
+    public AllweightsLeDeviceListAdapter getmLeDeviceListAdapter() {
         return mLeDeviceListAdapter;
     }
 

@@ -13,8 +13,7 @@ import androidx.lifecycle.Observer;
 
 import com.ingreatsol.allweights.AllweightsConnect;
 import com.ingreatsol.allweights.AllweightsData;
-import com.ingreatsol.allweights.EstadoConexion;
-import com.ingreatsol.allweights.exceptions.AllweightsException;
+import com.ingreatsol.allweights.ConnectionStatus;
 import com.ingreatsol.allweightslibrary.databinding.FragmentSecondBinding;
 
 public class SecondFragment extends Fragment {
@@ -30,9 +29,9 @@ public class SecondFragment extends Fragment {
             binding.textviewPeso.setText(allweightsData.weight.toString());
         }
     };
-    private final Observer<EstadoConexion> estadoConexionObserve = new Observer<EstadoConexion>() {
+    private final Observer<ConnectionStatus> estadoConexionObserve = new Observer<ConnectionStatus>() {
         @Override
-        public void onChanged(@NonNull EstadoConexion estado) {
+        public void onChanged(@NonNull ConnectionStatus estado) {
             binding.textViewEstado.setText(estado.toString());
         }
     };
@@ -58,10 +57,8 @@ public class SecondFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         binding.buttonSecond.setOnClickListener(l -> {
-            try {
-                allweightsConnect.encerar_balanza();
-            } catch (AllweightsException e) {
-                e.printStackTrace();
+            if (!allweightsConnect.waxScale()){
+                Toast.makeText(requireActivity(), "Error al encerar", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -71,7 +68,7 @@ public class SecondFragment extends Fragment {
     public void onResume() {
         super.onResume();
         allweightsConnect.getData().observe(requireActivity(), dataObserver);
-        allweightsConnect.getIsConnected().observe(requireActivity(), estadoConexionObserve);
+        allweightsConnect.getConnectionStatus().observe(requireActivity(), estadoConexionObserve);
         allweightsConnect.registerService(requireActivity());
     }
 
@@ -80,7 +77,7 @@ public class SecondFragment extends Fragment {
     public void onPause() {
         super.onPause();
         allweightsConnect.getData().removeObserver(dataObserver);
-        allweightsConnect.getIsConnected().removeObserver(estadoConexionObserve);
+        allweightsConnect.getConnectionStatus().removeObserver(estadoConexionObserve);
         allweightsConnect.unRegisterService(requireActivity());
     }
 

@@ -30,10 +30,10 @@ class Bluetooth extends AsyncTask<Void , Void, Void>
         this.address = ADDRESS;
     }
 
-    public boolean encerar(){
+    public boolean sendData(String data){
         if (btSocket != null) {
             try {
-                btSocket.getOutputStream().write("0".toString().getBytes());
+                btSocket.getOutputStream().write(data.getBytes());
                 return true;
             } catch (IOException e) {
                 return false;

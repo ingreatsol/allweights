@@ -62,14 +62,6 @@ public class AllweightsScan {
                 });
     }
 
-    public BluetoothAdapter getmBluetoothAdapter(Activity activity) {
-        if (mBluetoothAdapter == null) {
-            final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
-            mBluetoothAdapter = bluetoothManager.getAdapter();
-        }
-        return mBluetoothAdapter;
-    }
-
     public LiveData<Boolean> getScanState() {
         return mScanning;
     }
@@ -156,5 +148,13 @@ public class AllweightsScan {
     private void LaunchEnableBle() {
         Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         enable_ble_launcher.launch(enableBT);
+    }
+
+    private BluetoothAdapter getmBluetoothAdapter(FragmentActivity activity) {
+        if (mBluetoothAdapter == null) {
+            final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+            mBluetoothAdapter = bluetoothManager.getAdapter();
+        }
+        return mBluetoothAdapter;
     }
 }

@@ -32,8 +32,7 @@ public class AllweightsUtils {
             case "android.permission.BLUETOOTH_CONNECT":
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return false;
         }
-        boolean result = (ActivityCompat.checkSelfPermission(application, permissionSend) != PackageManager.PERMISSION_GRANTED);
-        return result;
+        return (ActivityCompat.checkSelfPermission(application, permissionSend) != PackageManager.PERMISSION_GRANTED);
     }
 
     @NonNull

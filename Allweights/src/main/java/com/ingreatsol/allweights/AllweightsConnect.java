@@ -1,17 +1,14 @@
 package com.ingreatsol.allweights;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -23,9 +20,6 @@ import androidx.annotation.RequiresPermission;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 
-import com.ingreatsol.allweights.exceptions.AllweightsException;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,29 +27,69 @@ public class AllweightsConnect {
     public static final String TAG = AllweightsScan.class.getSimpleName();
 
     private final MutableLiveData<AllweightsData> data;
-    private final MutableLiveData<EstadoConexion> isConnected;
+    private final MutableLiveData<ConnectionStatus> connectionStatus;
     private BluetoothDevice device;
     private String entrada = "";
     public AllweightsBluetoothLeService mBluetoothLeService;
-    private BluetoothAdapter mBluetoothAdapter;
     public BluetoothGattCharacteristic mNotifyCharacteristic;
     private boolean transmision_activa = false;
     private Bluetooth_listener listener;
     public Bluetooth taskbluetooth = null;
     Transmision_bluetooth transmisionbluetooth;
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+        public void onReceive(Context context, @NonNull Intent intent) {
+            final String action = intent.getAction();
+            switch (action) {
+                case GattAttributes.ACTION_GATT_CONNECTED:
+                    connectionStatus.postValue(ConnectionStatus.CONNECTED);
+                    break;
+                case GattAttributes.ACTION_GATT_CONNECTING:
+                    connectionStatus.postValue(ConnectionStatus.CONNECTING);
+                    break;
+                case GattAttributes.ACTION_GATT_DISCONNECTED:
+                    connectionStatus.postValue(ConnectionStatus.DISCONNECTED);
+                    break;
+                case GattAttributes.ACTION_GATT_SERVICES_DISCOVERED:
+                    displayGattServices(AllweightsBluetoothLeService.getInstance().getSupportedGattServices());
+                    break;
+                case GattAttributes.ACTION_DATA_AVAILABLE:
+                    procesardatos(intent.getStringExtra(GattAttributes.EXTRA_DATA));
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBluetoothLeService = ((AllweightsBluetoothLeService.LocalBinder) service).getService();
+            if (!mBluetoothLeService.initialize()) {
+                return;
+            }
+            mBluetoothLeService.connect(device.getAddress());
+        }
 
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBluetoothLeService = null;
+        }
+    };
 
     public AllweightsConnect() {
         data = new MutableLiveData<>();
-        isConnected = new MutableLiveData<>(EstadoConexion.DESCONECTADO);
+        connectionStatus = new MutableLiveData<>(ConnectionStatus.DISCONNECTED);
     }
 
     public MutableLiveData<AllweightsData> getData() {
         return data;
     }
 
-    public MutableLiveData<EstadoConexion> getIsConnected() {
-        return isConnected;
+    public MutableLiveData<ConnectionStatus> getConnectionStatus() {
+        return connectionStatus;
     }
 
     @RequiresPermission(allOf = {
@@ -65,24 +99,6 @@ public class AllweightsConnect {
     public void init(FragmentActivity activity, @NonNull BluetoothDevice device) {
         this.device = device;
         if (device.getType() == 1) {
-            listener = new Bluetooth_listener() {
-                @Override
-                public void onFinisched() {
-                    isConnected.postValue(EstadoConexion.DESCONECTADO);
-                }
-
-                @Override
-                public void OnResult(String result) {
-                    procesardatos(result);
-                }
-
-                @Override
-                public void initask(BluetoothSocket btSocket, BluetoothDevice btdevice) {
-                    transmisionbluetooth = new Transmision_bluetooth(listener, btSocket);
-                    transmisionbluetooth.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    isConnected.postValue(EstadoConexion.CONECTADO);
-                }
-            };
             connectBluetoothV1Task();
         } else {
             Intent gattServiceIntent = new Intent(activity, AllweightsBluetoothLeService.class);
@@ -94,40 +110,101 @@ public class AllweightsConnect {
             "android.permission.BLUETOOTH_SCAN",
             "android.permission.BLUETOOTH_CONNECT"
     })
+    public void registerService(@NonNull Activity activity) {
+        activity.registerReceiver(mGattUpdateReceiver, GattAttributes.makeGattUpdateIntentFilter());
+        if (device.getType() == 1) {
+            connectBluetoothV1Task();
+        } else {
+            if (AllweightsBluetoothLeService.isInstanceCreated()) {
+                AllweightsBluetoothLeService.getInstance().connect(device.getAddress());
+            }
+        }
+    }
+
+    @RequiresPermission(allOf = {
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.BLUETOOTH_CONNECT"
+    })
+    public void unRegisterService(@NonNull Activity activity) {
+        activity.unregisterReceiver(mGattUpdateReceiver);
+        if (device.getType() == 1) {
+            taskbluetooth.finish();
+        } else {
+            if (AllweightsBluetoothLeService.isInstanceCreated()) {
+                AllweightsBluetoothLeService.getInstance().disconnect();
+            }
+        }
+    }
+
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    public void destroyService(Activity activity) {
+        if (this.device.getType() == 1) {
+            if (transmisionbluetooth != null) {
+                transmisionbluetooth.isCancelled();
+            }
+            if (taskbluetooth != null) {
+                taskbluetooth.finish();
+            }
+            taskbluetooth = null;
+            if (listener != null){
+                listener.onFinisched();
+            }
+            listener = null;
+        } else {
+            activity.unbindService(mServiceConnection);
+            mBluetoothLeService = null;
+        }
+    }
+
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    public boolean waxScale() {
+        String comando = "0;";
+        if (device.getType() == 1) {
+            return taskbluetooth.sendData(comando);
+        }
+        return enviarMensaje(comando);
+    }
+
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    public boolean calibrateScale(Integer calibracion) {
+        String comando = "a;calibrar;" + calibracion + ";";
+        if (device.getType() == 1) {
+            return taskbluetooth.sendData(comando);
+        }
+        return enviarMensaje(comando);
+    }
+
+    @RequiresPermission(allOf = {
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.BLUETOOTH_CONNECT"
+    })
     private void connectBluetoothV1Task() {
-        isConnected.postValue(EstadoConexion.CONECTANDO);
+        connectionStatus.postValue(ConnectionStatus.CONNECTING);
+        if (listener == null){
+            listener = new Bluetooth_listener() {
+                @Override
+                public void onFinisched() {
+                    connectionStatus.postValue(ConnectionStatus.DISCONNECTED);
+                }
+
+                @Override
+                public void OnResult(String result) {
+                    procesardatos(result);
+                }
+
+                @Override
+                public void initask(BluetoothSocket btSocket, BluetoothDevice btdevice) {
+                    transmisionbluetooth = new Transmision_bluetooth(listener, btSocket);
+                    transmisionbluetooth.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    connectionStatus.postValue(ConnectionStatus.CONNECTED);
+                }
+            };
+        }
         if (taskbluetooth == null) {
             taskbluetooth = new Bluetooth(listener, device.getAddress());
         }
         taskbluetooth.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
-
-    public final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
-        @Override
-        @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-        public void onReceive(Context context, @NonNull Intent intent) {
-            final String action = intent.getAction();
-            switch (action) {
-                case AllweightsBluetoothLeService.ACTION_GATT_CONNECTED:
-                    isConnected.postValue(EstadoConexion.CONECTADO);
-                    break;
-                case AllweightsBluetoothLeService.ACTION_GATT_CONNECTING:
-                    isConnected.postValue(EstadoConexion.CONECTANDO);
-                    break;
-                case AllweightsBluetoothLeService.ACTION_GATT_DISCONNECTED:
-                    isConnected.postValue(EstadoConexion.DESCONECTADO);
-                    break;
-                case AllweightsBluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED:
-                    displayGattServices(AllweightsBluetoothLeService.getInstance().getSupportedGattServices());
-                    break;
-                case AllweightsBluetoothLeService.ACTION_DATA_AVAILABLE:
-                    procesardatos(intent.getStringExtra(AllweightsBluetoothLeService.EXTRA_DATA));
-                    break;
-                default:
-                    break;
-            }
-        }
-    };
 
     private void procesardatos(String strReceived) {
         if (strReceived != null) {
@@ -156,83 +233,21 @@ public class AllweightsConnect {
         }
     }
 
-    @RequiresPermission(allOf = {
-            "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
-    })
-    private void connectBleService() {
-        if (device.getType() == 1) {
-            connectBluetoothV1Task();
-        } else {
-            if (AllweightsBluetoothLeService.isInstanceCreated()) {
-                AllweightsBluetoothLeService.getInstance().connect(device.getAddress());
-            }
-        }
-    }
-
-    @RequiresPermission(allOf = {
-            "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
-    })
-    private void disconnectBleService(){
-        if (device.getType() == 1) {
-            taskbluetooth.finish();
-        } else {
-            if (AllweightsBluetoothLeService.isInstanceCreated()) {
-                AllweightsBluetoothLeService.getInstance().disconnect();
-            }
-        }
-    }
-
-    public final ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-        public void onServiceConnected(ComponentName componentName, IBinder service) {
-            mBluetoothLeService = ((AllweightsBluetoothLeService.LocalBinder) service).getService();
-            if (!mBluetoothLeService.initialize()) {
-                // activity.finish();
-            }
-            mBluetoothLeService.connect(device.getAddress());
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            mBluetoothLeService = null;
-        }
-    };
-
-    @NonNull
-    public final IntentFilter makeGattUpdateIntentFilter() {
-        final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(AllweightsBluetoothLeService.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(AllweightsBluetoothLeService.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(AllweightsBluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
-        intentFilter.addAction(AllweightsBluetoothLeService.ACTION_DATA_AVAILABLE);
-        return intentFilter;
-    }
-
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    public void displayGattServices(List<BluetoothGattService> gattServices) {
+    private void displayGattServices(List<BluetoothGattService> gattServices) {
         if (gattServices == null) return;
-        String uuid = null;
         for (BluetoothGattService gattService : gattServices) {
-            List<BluetoothGattCharacteristic> gattCharacteristics =
-                    gattService.getCharacteristics();
-            ArrayList<BluetoothGattCharacteristic> charas =
-                    new ArrayList<>();
-            for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-                charas.add(gattCharacteristic);
-                uuid = gattCharacteristic.getUuid().toString();
-                //aqui voy hacer pruebas
-                if (uuid.equals("0000ffe1-0000-1000-8000-00805f9b34fb")) {
-                    retornar_caracteristica(gattCharacteristic);
+            for (BluetoothGattCharacteristic gattCharacteristic : gattService.getCharacteristics()) {
+                if (gattCharacteristic.getUuid().equals(GattAttributes.HEART_RATE_MEASUREMENT2)) {
+                    activarCaracteristica(gattCharacteristic);
+                    return;
                 }
             }
         }
     }
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    public void retornar_caracteristica(@NonNull BluetoothGattCharacteristic caracteristica) {
+    private void activarCaracteristica(@NonNull BluetoothGattCharacteristic caracteristica) {
         final int charaProp = caracteristica.getProperties();
         if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
             // If there is an active notification on a characteristic, clear
@@ -249,23 +264,19 @@ public class AllweightsConnect {
             mBluetoothLeService.setCharacteristicNotification(
                     caracteristica, true);
         }
-        activar_peso();
+        activarPeso();
     }
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    private void activar_peso() {
+    private void activarPeso() {
         new Handler().postDelayed(() -> {
-            if (mBluetoothLeService != null) {
-                if (mNotifyCharacteristic != null) {
-                    if (!transmision_activa) {
-                        retornar_caracteristica(mNotifyCharacteristic);
-                        transmision_activa = true;
-                    }
-                    mBluetoothLeService.sendData("a;", mNotifyCharacteristic);
-                    Log.i(TAG, "activando");
-                } else {
-                    Log.i(TAG, "Reinicie la balanza");
+            if (comprobarConexionBle()) {
+                if (!transmision_activa) {
+                    activarCaracteristica(mNotifyCharacteristic);
+                    transmision_activa = true;
                 }
+                mBluetoothLeService.sendData("a;", mNotifyCharacteristic);
+                Log.i(TAG, "activando");
             } else {
                 Log.i(TAG, "Reinicie la balanza");
             }
@@ -274,67 +285,15 @@ public class AllweightsConnect {
     }
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    private void enviar_mensaje(String mensaje) throws AllweightsException {
-        if (comprobar_conexionBle()) {
-            mBluetoothLeService.sendData(mensaje, mNotifyCharacteristic);
+    private boolean enviarMensaje(String mensaje) {
+        if (comprobarConexionBle()) {
+            return mBluetoothLeService.sendData(mensaje, mNotifyCharacteristic);
         }
-        throw new AllweightsException("Reinicie la balanza");
-    }
-
-    public boolean comprobar_conexionBle() {
-        if (AllweightsBluetoothLeService.isInstanceCreated()) return mNotifyCharacteristic != null;
         return false;
     }
 
-    @RequiresPermission(allOf = {
-            "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
-    })
-    public void registerService(@NonNull Activity activity) {
-        activity.registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        connectBleService();
-    }
-
-    @RequiresPermission(allOf = {
-            "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
-    })
-    public void unRegisterService(@NonNull Activity activity) {
-        activity.unregisterReceiver(mGattUpdateReceiver);
-        disconnectBleService();
-    }
-
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    public void destroyService(Activity activity) {
-        if (this.device.getType() == 1) {
-            if (transmisionbluetooth != null) {
-                transmisionbluetooth.isCancelled();
-            }
-            if (taskbluetooth != null) {
-                taskbluetooth.finish();
-            }
-            taskbluetooth = null;
-        } else {
-            activity.unbindService(mServiceConnection);
-            mBluetoothLeService = null;
-        }
-    }
-
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    public void encerar_balanza() throws AllweightsException {
-        enviar_mensaje("0;");
-    }
-
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    public void calibrar_balanza(Integer calibracion) throws AllweightsException {
-        enviar_mensaje("a;calibrar;" + calibracion + ";");
-    }
-
-    public BluetoothAdapter getmBluetoothAdapter(Activity activity) {
-        if (mBluetoothAdapter == null) {
-            final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
-            mBluetoothAdapter = bluetoothManager.getAdapter();
-        }
-        return mBluetoothAdapter;
+    private boolean comprobarConexionBle() {
+        if (AllweightsBluetoothLeService.isInstanceCreated()) return mNotifyCharacteristic != null;
+        return false;
     }
 }

@@ -43,3 +43,23 @@ In addition, the following service should be added.
     android:enabled="true"
     android:exported="false" />
 ```
+## Connect to allweights
+To connect to allweights you have to instantiate the `AllweightsConnect` object and initialize the allweights service that receives data from the scale with the `init` method, sending as parameter the context of the activity and the `BluetoothDevice` to which it is going to connect.
+```java
+// In fragments paste this code in the `onCreateView` method
+        
+AllweightsConnect   allweightsConnect = new AllweightsConnect();
+
+BluetoothDevice device = getArguments().getParcelable("device");
+
+allweightsConnect.init(requireActivity(), device);
+```
+```java
+//In activities paste this code in the `onCreate` method
+
+AllweightsConnect allweightsConnect = new AllweightsConnect();
+
+BluetoothDevice device = getIntent().getExtras().getParcelable("device");
+
+allweightsConnect.init(this, device);
+```

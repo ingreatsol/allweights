@@ -5,11 +5,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
-import androidx.navigation.fragment.NavHostFragment;
 
 import com.ingreatsol.allweights.AllweightsConnect;
 import com.ingreatsol.allweights.AllweightsData;
@@ -26,7 +26,8 @@ public class SecondFragment extends Fragment {
         @SuppressLint("SetTextI18n")
         @Override
         public void onChanged(@NonNull AllweightsData allweightsData) {
-            binding.textviewPeso.setText(allweightsData.peso.toString());
+            Toast.makeText(requireActivity(), allweightsData.toString(), Toast.LENGTH_LONG).show();
+            binding.textviewPeso.setText(allweightsData.weight.toString());
         }
     };
     private final Observer<EstadoConexion> estadoConexionObserve = new Observer<EstadoConexion>() {
@@ -71,7 +72,7 @@ public class SecondFragment extends Fragment {
         super.onResume();
         allweightsConnect.getData().observe(requireActivity(), dataObserver);
         allweightsConnect.getIsConnected().observe(requireActivity(), estadoConexionObserve);
-        allweightsConnect.registar_sevicio(requireActivity());
+        allweightsConnect.registerService(requireActivity());
     }
 
     @SuppressLint("MissingPermission")
@@ -80,7 +81,7 @@ public class SecondFragment extends Fragment {
         super.onPause();
         allweightsConnect.getData().removeObserver(dataObserver);
         allweightsConnect.getIsConnected().removeObserver(estadoConexionObserve);
-        allweightsConnect.quitar_servicio(requireActivity());
+        allweightsConnect.unRegisterService(requireActivity());
     }
 
     @SuppressLint("MissingPermission")
@@ -88,7 +89,7 @@ public class SecondFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        allweightsConnect.eliminar_servicio(requireActivity());
+        allweightsConnect.destroyService(requireActivity());
     }
 
 }

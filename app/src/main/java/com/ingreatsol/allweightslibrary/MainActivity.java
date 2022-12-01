@@ -1,6 +1,7 @@
 package com.ingreatsol.allweightslibrary;
 
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,6 +13,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.ingreatsol.allweights.AllweightsConnect;
 import com.ingreatsol.allweightslibrary.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,6 +30,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
+
+        AllweightsConnect allweightsConnect = new AllweightsConnect();
+
+        BluetoothDevice device = getIntent().getExtras().getParcelable("device");
+
+        allweightsConnect.init(this, device);
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();

@@ -71,6 +71,7 @@ private final Observer<AllweightsData> dataObserver = new Observer<AllweightsDat
         @Override
         public void onChanged(@NonNull AllweightsData allweightsData) {
             //Here are the weights of the allweights scale
+            Toast.makeText(requireActivity(), allweightsData.toString(), Toast.LENGTH_LONG).show();
         }
     };
     
@@ -96,3 +97,22 @@ allweightsConnect.unRegisterService(this);
 //in onDestroy
 allweightsConnect.destroyService(this);
 ```
+### Method `getConnectionStatus`
+The `getConnectionStatus` method returns a `LiveData` object to which a observer must be assigned to receive the connection status between the allweights scale and the android device.
+```java
+private final Observer<ConnectionStatus> estadoConexionObserve = new Observer<ConnectionStatus>() {
+        @Override
+        public void onChanged(@NonNull ConnectionStatus estado) {
+            Toast.makeText(requireActivity(), estado.toString(), Toast.LENGTH_LONG).show();
+        }
+    };
+      
+// in onResume
+allweightsConnect.getConnectionStatus().observe(this, estadoConexionObserve);
+// in onPause
+allweightsConnect.getConnectionStatus().removeObserver(estadoConexionObserve);
+```
+The observer sends an `enum` object `ConnectionStatus` which can be:
+1. `CONNECTED`: The device is connected to the scale and is receiving data.
+2. `DISCONNECTED`: The device is not connected to the scale and has to be reconnected with the `registerService` method.
+3. `CONNECTING`: The device is connecting to the scale but is not fully connected yet.

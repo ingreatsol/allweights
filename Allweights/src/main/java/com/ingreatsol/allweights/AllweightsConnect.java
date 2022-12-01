@@ -281,7 +281,6 @@ public class AllweightsConnect {
                 Log.i(TAG, "Reinicie la balanza");
             }
         }, 1500);
-
     }
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")

@@ -25,13 +25,13 @@ public class SecondFragment extends Fragment {
         @SuppressLint("SetTextI18n")
         @Override
         public void onChanged(@NonNull AllweightsData allweightsData) {
-            Toast.makeText(requireActivity(), allweightsData.toString(), Toast.LENGTH_LONG).show();
             binding.textviewPeso.setText(allweightsData.weight.toString());
         }
     };
     private final Observer<ConnectionStatus> estadoConexionObserve = new Observer<ConnectionStatus>() {
         @Override
         public void onChanged(@NonNull ConnectionStatus estado) {
+            Toast.makeText(requireActivity(), estado.toString(), Toast.LENGTH_LONG).show();
             binding.textViewEstado.setText(estado.toString());
         }
     };

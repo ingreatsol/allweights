@@ -63,3 +63,36 @@ BluetoothDevice device = getIntent().getExtras().getParcelable("device");
 
 allweightsConnect.init(this, device);
 ```
+### Method `getData`
+The `getData` method returns a `LiveData` object to which an observer must be assigned to update the weights of the scales.
+```java
+private final Observer<AllweightsData> dataObserver = new Observer<AllweightsData>() {
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onChanged(@NonNull AllweightsData allweightsData) {
+            //Here are the weights of the allweights scale
+        }
+    };
+    
+//in onResume
+allweightsConnect.getData().observe(this, dataObserver);
+//in onPause
+allweightsConnect.getData().removeObserver(dataObserver);
+```
+The observer sends an `AllweightsData` object which contains:
+ 
+1.  `weight`: A numeric value indicating the current weight of the scale.
+2.  `isEnergyConnected`: A boolean value indicating whether the scale is connected to electricity.
+3.  `bateryPercent`: A numeric value indicating the battery charge.
+
+### Method `registerService`
+The `registerService` method tells the previously started service to start receiving data and send it to the `getData` observer.
+
+```java
+// in onResume
+allweightsConnect.registerService(this);
+// in onPause
+allweightsConnect.unRegisterService(this);
+//in onDestroy
+allweightsConnect.destroyService(this);
+```

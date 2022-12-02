@@ -81,6 +81,22 @@ To do this, the first thing to do is to create a `layout` file (name listitem_de
         android:textSize="16sp" />
 </LinearLayout>
 ```
+In a fragment or activity, instantiate the `AllweightsScan` class and execute the `init` method in `onCreate` that receives the context of the activity and the layout we created earlier.
+```xml
+AllweightsScan bluetoothScan = new AllweightsScan();
+
+bluetoothScan.init(this,
+        R.layout.listitem_device,
+        R.id.device_address,
+        R.id.device_name);
+```
+To start the bluetooths scan, you have to use the `scan` method, and to stop it, with the `stopScan` method (you must have enabled all the permissions needed to perform the scan before).
+```java
+bluetoothScan.scan(this);
+bluetoothScan.stopScan();
+```
+
+
 ## Connect to allweights
 To connect to allweights you have to instantiate the `AllweightsConnect` object and initialize the allweights service that receives data from the scale with the `init` method, sending as parameter the context of the activity and the `BluetoothDevice` to which it is going to connect.
 ```java

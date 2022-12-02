@@ -156,6 +156,7 @@ binding.dispositivos.setOnItemClickListener((parent, _view, position, id) -> {
                 Intent intent = new Intent(this, SecondActivity.class);
                 intent.putExtra("device", device);
                 startActivity(intent);
+                finish();
             } catch (Exception e) {
                 e.printStackTrace();
             }

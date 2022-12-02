@@ -3,13 +3,22 @@ Library for connecting Allweights scales to Android applications
 
 ## Using
 ### Gradle file
+Add it in your root build.gradle at the end of repositories:
+```gradle
+allprojects {
+        repositories {
+                ...
+                maven { url 'https://jitpack.io' }
+        }
+}
+```
 In the `gradle` file of the `app` module add the `allweights` library
 ```gradle
 implementation 'com.github.ingreatsol:allweights:version'
 ```
 `version` refers to the latest version of the library, for example.
 ```gradle
-implementation 'com.github.ingreatsol:allweights:1.0.0'
+implementation 'com.github.ingreatsol:allweights:2.0.0'
 ```
 ### AndroidManifestFile
 The library requires location and blueooth permissions to work. In the manifest add the following permissions.
@@ -42,6 +51,120 @@ In addition, the following service should be added.
     android:name="com.ingreatsol.allweights.AllweightsBluetoothLeService"
     android:enabled="true"
     android:exported="false" />
+```
+## Scan Allweights
+To connect to Allweights we need a bluetooth object `BluetoothDevice`, for this we must implement a bluetooth device search to find the bluetooth of the scale.
+
+To do this, the first thing to do is to create a `layout` file (name listitem_device.xml) that will contain each of the devices that the library finds.
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="2dp"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/device_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Device name"
+        android:textAlignment="center"
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/device_address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Device address"
+        android:textAlignment="center"
+        android:textSize="16sp" />
+</LinearLayout>
+```
+In a fragment or activity, instantiate the `AllweightsScan` class and execute the `init` method in `onCreate` that receives the context of the activity and the layout we created earlier.
+```xml
+AllweightsScan bluetoothScan = new AllweightsScan();
+
+bluetoothScan.init(this,
+        R.layout.listitem_device,
+        R.id.device_address,
+        R.id.device_name);
+```
+To start the bluetooths scan, you have to use the `scan` method, and to stop it, with the `stopScan` method (you must have enabled all the permissions needed to perform the scan before).
+```java
+bluetoothScan.scan(this);
+bluetoothScan.stopScan();
+```
+To know the status of the scan, the `getScanState` method is used, which returns a `LiveData` to which an `Observer` object must be assigned.
+```java
+Observer<Boolean> estadoCOnexionObserve = new Observer<Boolean>() {
+        @Override
+        public void onChanged(Boolean estado) {
+            Toast.makeText(requireActivity(), estado.toString(), Toast.LENGTH_LONG).show();
+            binding.progressBar.setVisibility(estado ? View.VISIBLE : View.GONE);
+            binding.button.setVisibility(estado ? View.GONE : View.VISIBLE);
+        }
+    };
+    
+bluetoothScan.getScanState().observe(this, estadoCOnexionObserve);
+```
+In the xml file of the fragment or activity you have to add a list where the bluetooth devices will be represented.
+```xml
+<ListView
+        android:id="@+id/dispositivos"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:choiceMode="singleChoice"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toTopOf="@+id/progressBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+<ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Escanear"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+```
+And assign the `Adapter` object of the library to that list
+```java
+binding.dispositivos.setOnItemClickListener((parent, _view, position, id) -> {
+            try {
+                final BluetoothDevice device = bluetoothScan.getDevice(position);
+
+                if (device == null) return;
+
+                bluetoothScan.cancelDiscovery();
+
+                Intent intent = new Intent(this, SecondActivity.class);
+                intent.putExtra("device", device);
+                startActivity(intent);
+                finish();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        binding.dispositivos.setAdapter(bluetoothScan.getmLeDeviceListAdapter());
+
+        binding.button.setOnClickListener(l -> bluetoothScan.scan(this));
 ```
 ## Connect to allweights
 To connect to allweights you have to instantiate the `AllweightsConnect` object and initialize the allweights service that receives data from the scale with the `init` method, sending as parameter the context of the activity and the `BluetoothDevice` to which it is going to connect.

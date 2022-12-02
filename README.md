@@ -95,7 +95,17 @@ To start the bluetooths scan, you have to use the `scan` method, and to stop it,
 bluetoothScan.scan(this);
 bluetoothScan.stopScan();
 ```
-
+To know the status of the scan, the `getScanState` method is used, which returns a `LiveData` to which an `Observer` object must be assigned.
+```java
+Observer<Boolean> estadoCOnexionObserve = new Observer<Boolean>() {
+        @Override
+        public void onChanged(Boolean estado) {
+            Toast.makeText(requireActivity(), estado.toString(), Toast.LENGTH_LONG).show();
+        }
+    };
+    
+bluetoothScan.getScanState().observe(this, estadoCOnexionObserve);
+```
 
 ## Connect to allweights
 To connect to allweights you have to instantiate the `AllweightsConnect` object and initialize the allweights service that receives data from the scale with the `init` method, sending as parameter the context of the activity and the `BluetoothDevice` to which it is going to connect.

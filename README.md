@@ -186,6 +186,13 @@ BluetoothDevice device = getIntent().getExtras().getParcelable("device");
 
 allweightsConnect.init(this, device);
 ```
+Or by mac y deviceType
+```java
+String mac = device.getAddress();
+Integer type = device.getType();
+
+allweightsConnect.init(this, mac, type);
+```
 ### Method `getData`
 The `getData` method returns a `LiveData` object to which an observer must be assigned to update the weights of the scales.
 ```java

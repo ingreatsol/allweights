@@ -52,6 +52,35 @@ In addition, the following service should be added.
     android:enabled="true"
     android:exported="false" />
 ```
+## Scan Allweights
+To connect to Allweights we need a bluetooth object `BluetoothDevice`, for this we must implement a bluetooth device search to find the bluetooth of the scale.
+
+To do this, the first thing to do is to create a `layout` file (name listitem_device.xml) that will contain each of the devices that the library finds.
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="2dp"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/device_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Device name"
+        android:textAlignment="center"
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/device_address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Device address"
+        android:textAlignment="center"
+        android:textSize="16sp" />
+</LinearLayout>
+```
 ## Connect to allweights
 To connect to allweights you have to instantiate the `AllweightsConnect` object and initialize the allweights service that receives data from the scale with the `init` method, sending as parameter the context of the activity and the `BluetoothDevice` to which it is going to connect.
 ```java

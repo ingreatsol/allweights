@@ -3,6 +3,15 @@ Library for connecting Allweights scales to Android applications
 
 ## Using
 ### Gradle file
+Add it in your root build.gradle at the end of repositories:
+```gradle
+allprojects {
+        repositories {
+                ...
+                maven { url 'https://jitpack.io' }
+        }
+}
+```
 In the `gradle` file of the `app` module add the `allweights` library
 ```gradle
 implementation 'com.github.ingreatsol:allweights:version'

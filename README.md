@@ -101,12 +101,70 @@ Observer<Boolean> estadoCOnexionObserve = new Observer<Boolean>() {
         @Override
         public void onChanged(Boolean estado) {
             Toast.makeText(requireActivity(), estado.toString(), Toast.LENGTH_LONG).show();
+            binding.progressBar.setVisibility(estado ? View.VISIBLE : View.GONE);
+            binding.button.setVisibility(estado ? View.GONE : View.VISIBLE);
         }
     };
     
 bluetoothScan.getScanState().observe(this, estadoCOnexionObserve);
 ```
+In the xml file of the fragment or activity you have to add a list where the bluetooth devices will be represented.
+```xml
+<ListView
+        android:id="@+id/dispositivos"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:choiceMode="singleChoice"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toTopOf="@+id/progressBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
+<ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Escanear"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+```
+And assign the `Adapter` object of the library to that list
+```java
+binding.dispositivos.setOnItemClickListener((parent, _view, position, id) -> {
+            try {
+                final BluetoothDevice device = bluetoothScan.getDevice(position);
+
+                if (device == null) return;
+
+                bluetoothScan.cancelDiscovery();
+
+                Intent intent = new Intent(this, SecondActivity.class);
+                intent.putExtra("device", device);
+                startActivity(intent);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        binding.dispositivos.setAdapter(bluetoothScan.getmLeDeviceListAdapter());
+
+        binding.button.setOnClickListener(l -> bluetoothScan.scan(this));
+```
 ## Connect to allweights
 To connect to allweights you have to instantiate the `AllweightsConnect` object and initialize the allweights service that receives data from the scale with the `init` method, sending as parameter the context of the activity and the `BluetoothDevice` to which it is going to connect.
 ```java

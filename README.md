@@ -18,7 +18,7 @@ implementation 'com.github.ingreatsol:allweights:version'
 ```
 `version` refers to the latest version of the library, for example.
 ```gradle
-implementation 'com.github.ingreatsol:allweights:1.0.0'
+implementation 'com.github.ingreatsol:allweights:2.0.0'
 ```
 ### AndroidManifestFile
 The library requires location and blueooth permissions to work. In the manifest add the following permissions.

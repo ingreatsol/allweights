@@ -13,6 +13,10 @@ import java.util.Arrays;
 
 public class AllweightsUtils {
 
+    public static final float RANGO_MAXIMO_BATERIA = 4.2f;
+    public static final float RANGO_MINIMO_BATERIA = 3.2f;
+    public static final float LIMITE_BATERIA = RANGO_MAXIMO_BATERIA - RANGO_MINIMO_BATERIA;
+
     public static final class Permission {
         public static final String[] LOCATION = new String[]{
                 "android.permission.ACCESS_FINE_LOCATION",

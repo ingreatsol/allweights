@@ -69,8 +69,6 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ckeckPermissionEscanearBluetooth(requireActivity());
-
         binding.dispositivos.setOnItemClickListener((parent, _view, position, id) -> {
             try {
                 final BluetoothDevice device = bluetoothScan.getDevice(position);
@@ -121,7 +119,7 @@ public class FirstFragment extends Fragment {
                 isGranted -> {
                     if (isGranted) {
                         try {
-                            bluetoothScan.escanear(requireActivity());
+                            bluetoothScan.scan(requireActivity());
                         } catch (AllweightsException e) {
                             e.printStackTrace();
                         }
@@ -135,7 +133,7 @@ public class FirstFragment extends Fragment {
             boolean resultStatus = result.entrySet().stream().allMatch(Map.Entry::getValue);
             if (resultStatus) {
                 try {
-                    bluetoothScan.escanear(requireActivity());
+                    bluetoothScan.scan(requireActivity());
                 } catch (AllweightsException e) {
                     e.printStackTrace();
                 }
@@ -148,7 +146,7 @@ public class FirstFragment extends Fragment {
         openAppSettingsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     try {
-                        bluetoothScan.escanear(requireActivity());
+                        bluetoothScan.scan(requireActivity());
                     } catch (AllweightsException e) {
                         e.printStackTrace();
                     }
@@ -180,7 +178,7 @@ public class FirstFragment extends Fragment {
                     .show();
         } else {
             try {
-                bluetoothScan.escanear(requireActivity());
+                bluetoothScan.scan(requireActivity());
             } catch (AllweightsException e) {
                 Toast.makeText(requireActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
             }

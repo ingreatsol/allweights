@@ -1,6 +1,8 @@
 package com.ingreatsol.allweightslibrary;
 
 import android.annotation.SuppressLint;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,7 @@ import androidx.lifecycle.Observer;
 
 import com.ingreatsol.allweights.AllweightsConnect;
 import com.ingreatsol.allweights.AllweightsData;
+import com.ingreatsol.allweights.AllweightsUtils;
 import com.ingreatsol.allweights.ConnectionStatus;
 import com.ingreatsol.allweightslibrary.databinding.FragmentSecondBinding;
 
@@ -26,12 +29,23 @@ public class SecondFragment extends Fragment {
         @Override
         public void onChanged(@NonNull AllweightsData allweightsData) {
             binding.textviewPeso.setText(allweightsData.weight.toString());
+            if (Boolean.TRUE.equals(allweightsData.isEnergyConnected)) {
+                binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
+            } else {
+                if (allweightsData.bateryPercent != null && AllweightsUtils.RANGO_MINIMO_BATERIA < allweightsData.bateryPercent) {
+                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.RED));
+                } else {
+                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
+                }
+            }
+            if (allweightsData.bateryPercent != null){
+                binding.progressbar.setProgress((int) (((allweightsData.bateryPercent - AllweightsUtils.RANGO_MINIMO_BATERIA) / AllweightsUtils.LIMITE_BATERIA) * 100));
+            }
         }
     };
     private final Observer<ConnectionStatus> estadoConexionObserve = new Observer<ConnectionStatus>() {
         @Override
         public void onChanged(@NonNull ConnectionStatus estado) {
-            Toast.makeText(requireActivity(), estado.toString(), Toast.LENGTH_LONG).show();
             binding.textViewEstado.setText(estado.toString());
         }
     };

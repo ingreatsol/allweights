@@ -54,7 +54,7 @@ public class AllweightsScan {
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         try {
-                            escanear(activity);
+                            scan(activity);
                         } catch (AllweightsException e) {
                             Log.e(TAG, e.getMessage());
                         }
@@ -101,7 +101,7 @@ public class AllweightsScan {
             "android.permission.BLUETOOTH_SCAN",
             "android.permission.BLUETOOTH_CONNECT"
     })
-    public void escanear(@NonNull FragmentActivity activity) throws AllweightsException {
+    public void scan(@NonNull FragmentActivity activity) throws AllweightsException {
         if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             throw new AllweightsException("No soporta tecnologia ble");
         }

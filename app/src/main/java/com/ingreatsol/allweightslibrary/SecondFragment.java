@@ -61,6 +61,7 @@ public class SecondFragment extends Fragment {
 
         allweightsConnect = new AllweightsConnect();
 
+        assert getArguments() != null;
         allweightsConnect.init(requireActivity(), getArguments().getParcelable("device"));
 
         return binding.getRoot();
@@ -70,9 +71,19 @@ public class SecondFragment extends Fragment {
     @SuppressLint("MissingPermission")
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        binding.buttonSecond.setOnClickListener(l -> {
+        binding.buttonEncerar.setOnClickListener(l -> {
             if (!allweightsConnect.waxScale()){
                 Toast.makeText(requireActivity(), "Error al encerar", Toast.LENGTH_LONG).show();
+            }
+        });
+        binding.buttonCalibrar1.setOnClickListener(l -> {
+            if (!allweightsConnect.calibrateScale(1)){
+                Toast.makeText(requireActivity(), "Error al calibrar", Toast.LENGTH_LONG).show();
+            }
+        });
+        binding.buttonVelocidad2.setOnClickListener(l -> {
+            if (!allweightsConnect.sampleQuantity(2)){
+                Toast.makeText(requireActivity(), "Error al escribir la velocidad", Toast.LENGTH_LONG).show();
             }
         });
     }

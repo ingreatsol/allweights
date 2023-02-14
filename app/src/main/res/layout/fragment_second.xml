@@ -21,27 +21,56 @@
         android:id="@+id/textview_peso"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="@string/peso"
         android:textSize="50sp"
-        app:layout_constraintBottom_toTopOf="@id/button_second"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/progressbar"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/button_second"
+    <TextView
+        android:id="@+id/text_comandos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Encerar"
-        app:layout_constraintBottom_toTopOf="@+id/textView"
+        android:text="@string/comandos"
+        android:textSize="20sp"
+        android:layout_marginTop="30dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/progressbar"
-        app:layout_constraintTop_toBottomOf="@id/textview_peso" />
+        app:layout_constraintTop_toBottomOf="@+id/textview_peso" />
+
+    <Button
+        android:id="@+id/button_encerar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/encerar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/progressbar"
+        app:layout_constraintTop_toBottomOf="@+id/text_comandos" />
+
+    <Button
+        android:id="@+id/button_calibrar1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/calibrar_1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/progressbar"
+        app:layout_constraintTop_toBottomOf="@+id/button_encerar" />
+
+    <Button
+        android:id="@+id/button_velocidad2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/muestreo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/progressbar"
+        app:layout_constraintTop_toBottomOf="@+id/button_calibrar1" />
 
     <TextView
         android:id="@+id/textView_estado"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Estado conexion"
+        android:text="@string/estado_conexion"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

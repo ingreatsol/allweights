@@ -57,7 +57,7 @@ public class FirstFragment extends Fragment {
 
         initLauchers();
 
-        bluetoothScan.init(requireActivity(),
+        bluetoothScan.init(this,
                 R.layout.listitem_device,
                 R.id.device_address,
                 R.id.device_name);

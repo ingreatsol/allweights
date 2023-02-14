@@ -21,6 +21,7 @@ import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -49,17 +50,38 @@ public class AllweightsScan {
     public void init(@NonNull FragmentActivity activity, @LayoutRes int layout,
                      @IdRes int device_address, @IdRes int device_name) {
         setAdapter(activity, layout, device_address, device_name);
-        enable_ble_launcher = activity.registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        try {
-                            scan(activity);
-                        } catch (AllweightsException e) {
-                            Log.e(TAG, e.getMessage());
+        if (enable_ble_launcher == null) {
+            enable_ble_launcher = activity.registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            try {
+                                scan(activity);
+                            } catch (AllweightsException e) {
+                                Log.e(TAG, e.getMessage());
+                            }
                         }
-                    }
-                });
+                    });
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    public void init(@NonNull Fragment fragment, @LayoutRes int layout,
+                     @IdRes int device_address, @IdRes int device_name) {
+        setAdapter(fragment.requireActivity(), layout, device_address, device_name);
+        if (enable_ble_launcher == null) {
+            enable_ble_launcher = fragment.registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            try {
+                                scan(fragment.requireActivity());
+                            } catch (AllweightsException e) {
+                                Log.e(TAG, e.getMessage());
+                            }
+                        }
+                    });
+        }
     }
 
     public LiveData<Boolean> getScanState() {
@@ -87,7 +109,7 @@ public class AllweightsScan {
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void setAdapter(Activity activity, @LayoutRes int layout,
-                                   @IdRes int device_address, @IdRes int device_name) {
+                           @IdRes int device_address, @IdRes int device_name) {
         if (mLeDeviceListAdapter == null) {
             mLeDeviceListAdapter = new AllweightsLeDeviceListAdapter(activity, layout, device_address, device_name);
         }
@@ -110,7 +132,7 @@ public class AllweightsScan {
             throw new AllweightsException("Faltan permisos");
         }
 
-        if (mLeDeviceListAdapter == null){
+        if (mLeDeviceListAdapter == null) {
             throw new AllweightsException("Adapter no inicializado");
         }
 

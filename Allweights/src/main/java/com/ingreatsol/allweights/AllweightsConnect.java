@@ -194,6 +194,15 @@ public class AllweightsConnect {
         return enviarMensaje(comando);
     }
 
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    public boolean sampleQuantity(Integer sampleQuantity) {
+        String comando = "velocidad;" + sampleQuantity + ";";
+        if (deviceType == 1) {
+            return taskbluetooth.sendData(comando);
+        }
+        return enviarMensaje(comando);
+    }
+
     @RequiresPermission(allOf = {
             "android.permission.BLUETOOTH_SCAN",
             "android.permission.BLUETOOTH_CONNECT"

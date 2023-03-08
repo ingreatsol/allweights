@@ -25,13 +25,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
     publishing {
-        multipleVariants {
-            withSourcesJar()
-            withJavadocJar()
-            allVariants()
-        }
+        // Publishes "fullRelease" build variant with "fullRelease" component created by
+        // Android Gradle plugin
+        singleVariant("release")
     }
 }
 
@@ -40,13 +37,14 @@ dependencies {
 }
 
 afterEvaluate {
-    android.libraryVariants.each{variant->
-        publishing.publications.create(variant.name, MavenPublication){
-            from components.findByName(variant.name)
-
-            groupId = 'com.ingreatsol'
-            artifactId = "allweights"
-            version = '2.0.6'
+    publishing{
+        publications{
+            release(MavenPublication){
+                from components.release
+                groupId = 'com.ingreatsol'
+                artifactId = 'allweights'
+                version = '2.0.6'
+            }
         }
     }
 }

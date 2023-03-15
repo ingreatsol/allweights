@@ -28,8 +28,8 @@ public class AllweightsConnect {
 
     private final MutableLiveData<AllweightsData> data;
     private final MutableLiveData<ConnectionStatus> connectionStatus;
-    private String deviceAddress;
-    private Integer deviceType;
+    private final String deviceAddress;
+    private final Integer deviceType;
     private String entrada = "";
     public AllweightsBluetoothLeService mBluetoothLeService;
     public BluetoothGattCharacteristic mNotifyCharacteristic;
@@ -80,9 +80,31 @@ public class AllweightsConnect {
         }
     };
 
-    public AllweightsConnect() {
+    @RequiresPermission(allOf = {
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.BLUETOOTH_CONNECT"
+    })
+    public AllweightsConnect(FragmentActivity activity, @NonNull BluetoothDevice device) {
+        this(activity, device.getAddress(), device.getType());
+    }
+
+    @RequiresPermission(allOf = {
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.BLUETOOTH_CONNECT"
+    })
+    public AllweightsConnect(FragmentActivity activity, String deviceAddress, Integer deviceType) {
         data = new MutableLiveData<>();
         connectionStatus = new MutableLiveData<>(ConnectionStatus.DISCONNECTED);
+
+        this.deviceAddress = deviceAddress;
+        this.deviceType = deviceType;
+
+        if (this.deviceType == 1) {
+            connectBluetoothV1Task();
+        } else {
+            Intent gattServiceIntent = new Intent(activity, AllweightsBluetoothLeService.class);
+            activity.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        }
     }
 
     public MutableLiveData<AllweightsData> getData() {
@@ -91,39 +113,6 @@ public class AllweightsConnect {
 
     public MutableLiveData<ConnectionStatus> getConnectionStatus() {
         return connectionStatus;
-    }
-
-    @RequiresPermission(allOf = {
-            "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
-    })
-    public void init(FragmentActivity activity, @NonNull BluetoothDevice device) {
-        this.deviceAddress = device.getAddress();
-        this.deviceType = device.getType();
-        _init(activity);
-    }
-
-    @RequiresPermission(allOf = {
-            "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
-    })
-    public void init(FragmentActivity activity, String deviceAddress, Integer deviceType) {
-        this.deviceAddress = deviceAddress;
-        this.deviceType = deviceType;
-        _init(activity);
-    }
-
-    @RequiresPermission(allOf = {
-            "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
-    })
-    private void _init(FragmentActivity activity){
-        if (this.deviceType == 1) {
-            connectBluetoothV1Task();
-        } else {
-            Intent gattServiceIntent = new Intent(activity, AllweightsBluetoothLeService.class);
-            activity.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-        }
     }
 
     @RequiresPermission(allOf = {
@@ -166,7 +155,7 @@ public class AllweightsConnect {
                 taskbluetooth.finish();
             }
             taskbluetooth = null;
-            if (listener != null){
+            if (listener != null) {
                 listener.onFinisched();
             }
             listener = null;
@@ -209,7 +198,7 @@ public class AllweightsConnect {
     })
     private void connectBluetoothV1Task() {
         connectionStatus.postValue(ConnectionStatus.CONNECTING);
-        if (listener == null){
+        if (listener == null) {
             listener = new Bluetooth_listener() {
                 @Override
                 public void onFinisched() {

@@ -55,7 +55,7 @@ public class FirstFragment extends Fragment {
     ) {
 
         binding = FragmentFirstBinding.inflate(inflater, container, false);
-        bluetoothScan = new AllweightsScan();
+        bluetoothScan = new AllweightsScan(this);
 
         mLeDeviceListAdapter = new LeDeviceListAdapter(requireActivity(),
                 R.layout.listitem_device,
@@ -63,8 +63,6 @@ public class FirstFragment extends Fragment {
                 R.id.device_name);
 
         initLauchers();
-
-        bluetoothScan.init(this);
 
         bluetoothScan.getDevices().observe(requireActivity(), devices -> {
             mLeDeviceListAdapter.clear();

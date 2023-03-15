@@ -1,5 +1,6 @@
 package com.ingreatsol.allweights;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -49,46 +50,36 @@ public class AllweightsScan {
             devices.setValue(currentDevices);
         }
     };
-    private ActivityResultLauncher<Intent> enable_ble_launcher;
+    private final ActivityResultLauncher<Intent> enable_ble_launcher;
 
-    @RequiresPermission(allOf = {
-            "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
-    })
-    public void init(@NonNull FragmentActivity activity) {
-        if (enable_ble_launcher == null) {
-            enable_ble_launcher = activity.registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == Activity.RESULT_OK) {
-                            try {
-                                scan(activity);
-                            } catch (AllweightsException e) {
-                                Log.e(TAG, e.getMessage());
-                            }
+    @SuppressLint("MissingPermission")
+    public AllweightsScan(@NonNull FragmentActivity activity) {
+        enable_ble_launcher = activity.registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        try {
+                            scan(activity);
+                        } catch (AllweightsException e) {
+                            Log.e(TAG, e.getMessage());
                         }
-                    });
-        }
+                    }
+                });
     }
 
-    @RequiresPermission(allOf = {
-            "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
-    })
-    public void init(@NonNull Fragment fragment) {
-        if (enable_ble_launcher == null) {
-            enable_ble_launcher = fragment.registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == Activity.RESULT_OK) {
-                            try {
-                                scan(fragment.requireActivity());
-                            } catch (AllweightsException e) {
-                                Log.e(TAG, e.getMessage());
-                            }
+    @SuppressLint("MissingPermission")
+    public AllweightsScan(@NonNull Fragment fragment) {
+        enable_ble_launcher = fragment.registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        try {
+                            scan(fragment.requireActivity());
+                        } catch (AllweightsException e) {
+                            Log.e(TAG, e.getMessage());
                         }
-                    });
-        }
+                    }
+                });
     }
 
     public LiveData<ArrayList<BluetoothDevice>> getDevices() {

@@ -59,13 +59,11 @@ public class SecondFragment extends Fragment {
 
         binding = FragmentSecondBinding.inflate(inflater, container, false);
 
-        allweightsConnect = new AllweightsConnect();
-
         assert getArguments() != null;
-        allweightsConnect.init(requireActivity(), getArguments().getParcelable("device"));
+
+        allweightsConnect = new AllweightsConnect(requireActivity(), getArguments().getParcelable("device"));
 
         return binding.getRoot();
-
     }
 
     @SuppressLint("MissingPermission")

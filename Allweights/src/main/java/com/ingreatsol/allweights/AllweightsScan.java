@@ -1,6 +1,5 @@
 package com.ingreatsol.allweights;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -17,8 +16,6 @@ import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.IdRes;
-import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
 import androidx.fragment.app.Fragment;
@@ -28,28 +25,37 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.ingreatsol.allweights.exceptions.AllweightsException;
 
+import java.util.ArrayList;
+
 public class AllweightsScan {
     public static final String TAG = AllweightsScan.class.getSimpleName();
-
     private final MutableLiveData<Boolean> mScanning = new MutableLiveData<>(false);
+    private final MutableLiveData<ArrayList<BluetoothDevice>> devices = new MutableLiveData<>(new ArrayList<>());
     private BluetoothAdapter mBluetoothAdapter;
-    private AllweightsLeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     public static final long SCAN_PERIOD = 10000;
     private final ScanCallback leScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            mLeDeviceListAdapter.addDevice(result.getDevice());
-            mLeDeviceListAdapter.notifyDataSetChanged();
+            ArrayList<BluetoothDevice> currentDevices = devices.getValue();
+
+            if (currentDevices == null) {
+             currentDevices = new ArrayList<>();
+            }
+
+            currentDevices.add(result.getDevice());
+
+            devices.setValue(currentDevices);
         }
     };
     private ActivityResultLauncher<Intent> enable_ble_launcher;
 
-    @SuppressLint("MissingPermission")
-    public void init(@NonNull FragmentActivity activity, @LayoutRes int layout,
-                     @IdRes int device_address, @IdRes int device_name) {
-        setAdapter(activity, layout, device_address, device_name);
+    @RequiresPermission(allOf = {
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.BLUETOOTH_CONNECT"
+    })
+    public void init(@NonNull FragmentActivity activity) {
         if (enable_ble_launcher == null) {
             enable_ble_launcher = activity.registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
@@ -65,10 +71,11 @@ public class AllweightsScan {
         }
     }
 
-    @SuppressLint("MissingPermission")
-    public void init(@NonNull Fragment fragment, @LayoutRes int layout,
-                     @IdRes int device_address, @IdRes int device_name) {
-        setAdapter(fragment.requireActivity(), layout, device_address, device_name);
+    @RequiresPermission(allOf = {
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.BLUETOOTH_CONNECT"
+    })
+    public void init(@NonNull Fragment fragment) {
         if (enable_ble_launcher == null) {
             enable_ble_launcher = fragment.registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
@@ -84,6 +91,10 @@ public class AllweightsScan {
         }
     }
 
+    public LiveData<ArrayList<BluetoothDevice>> getDevices() {
+        return devices;
+    }
+
     public LiveData<Boolean> getScanState() {
         return mScanning;
     }
@@ -96,27 +107,11 @@ public class AllweightsScan {
         }
     }
 
-    public BluetoothDevice getDevice(int position) {
-        return mLeDeviceListAdapter.getDevice(position);
-    }
-
     @RequiresPermission("android.permission.BLUETOOTH_SCAN")
     public void cancelDiscovery() {
         if (mBluetoothAdapter.isDiscovering()) {
             mBluetoothAdapter.cancelDiscovery();
         }
-    }
-
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    public void setAdapter(Activity activity, @LayoutRes int layout,
-                           @IdRes int device_address, @IdRes int device_name) {
-        if (mLeDeviceListAdapter == null) {
-            mLeDeviceListAdapter = new AllweightsLeDeviceListAdapter(activity, layout, device_address, device_name);
-        }
-    }
-
-    public AllweightsLeDeviceListAdapter getmLeDeviceListAdapter() {
-        return mLeDeviceListAdapter;
     }
 
     @RequiresPermission(allOf = {
@@ -132,10 +127,6 @@ public class AllweightsScan {
             throw new AllweightsException("Faltan permisos");
         }
 
-        if (mLeDeviceListAdapter == null) {
-            throw new AllweightsException("Adapter no inicializado");
-        }
-
         BluetoothAdapter mBluetoothAdapter = getmBluetoothAdapter(activity);
 
         // Checks if Bluetooth is supported on the device.
@@ -147,9 +138,6 @@ public class AllweightsScan {
             LaunchEnableBle();
             return;
         }
-
-        mLeDeviceListAdapter.clear();
-        mLeDeviceListAdapter.notifyDataSetChanged();
 
         bluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
         if (Boolean.FALSE.equals(mScanning.getValue())) {

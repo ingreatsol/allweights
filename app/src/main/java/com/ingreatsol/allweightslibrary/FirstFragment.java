@@ -37,6 +37,7 @@ public class FirstFragment extends Fragment {
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<String[]> multiplePermissionLauncher;
     private ActivityResultLauncher<Intent> openAppSettingsLauncher;
+    private LeDeviceListAdapter mLeDeviceListAdapter;
 
     Observer<Boolean> estadoCOnexionObserve = new Observer<Boolean>() {
         @Override
@@ -46,6 +47,7 @@ public class FirstFragment extends Fragment {
         }
     };
 
+    @SuppressLint("MissingPermission")
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
@@ -55,12 +57,20 @@ public class FirstFragment extends Fragment {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
         bluetoothScan = new AllweightsScan();
 
-        initLauchers();
-
-        bluetoothScan.init(this,
+        mLeDeviceListAdapter = new LeDeviceListAdapter(requireActivity(),
                 R.layout.listitem_device,
                 R.id.device_address,
                 R.id.device_name);
+
+        initLauchers();
+
+        bluetoothScan.init(this);
+
+        bluetoothScan.getDevices().observe(requireActivity(), devices -> {
+            mLeDeviceListAdapter.clear();
+            mLeDeviceListAdapter.addDevices(devices);
+            mLeDeviceListAdapter.notifyDataSetChanged();
+        });
 
         return binding.getRoot();
     }
@@ -71,7 +81,7 @@ public class FirstFragment extends Fragment {
 
         binding.dispositivos.setOnItemClickListener((parent, _view, position, id) -> {
             try {
-                final BluetoothDevice device = bluetoothScan.getDevice(position);
+                final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
 
                 if (device == null) return;
 
@@ -87,7 +97,7 @@ public class FirstFragment extends Fragment {
             }
         });
 
-        binding.dispositivos.setAdapter(bluetoothScan.getmLeDeviceListAdapter());
+        binding.dispositivos.setAdapter(mLeDeviceListAdapter);
 
         binding.button.setOnClickListener(l -> ckeckPermissionEscanearBluetooth(requireActivity()));
     }

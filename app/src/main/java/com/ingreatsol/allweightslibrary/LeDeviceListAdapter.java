@@ -1,4 +1,4 @@
-package com.ingreatsol.allweights;
+package com.ingreatsol.allweightslibrary;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -12,11 +12,12 @@ import android.widget.TextView;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
 
 import java.util.ArrayList;
 
-public class AllweightsLeDeviceListAdapter extends BaseAdapter {
+public class LeDeviceListAdapter extends BaseAdapter {
     private final ArrayList<BluetoothDevice> mLeDevices;
     protected Activity activity;
     private final @LayoutRes int mResource;
@@ -24,8 +25,8 @@ public class AllweightsLeDeviceListAdapter extends BaseAdapter {
     private final @IdRes int device_name;
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    public AllweightsLeDeviceListAdapter(Activity activity, @LayoutRes int layout,
-                                         @IdRes int device_address, @IdRes int device_name) {
+    public LeDeviceListAdapter(Activity activity, @LayoutRes int layout,
+                               @IdRes int device_address, @IdRes int device_name) {
         this.activity = activity;
         this.mLeDevices = new ArrayList<>();
         this.mResource = layout;
@@ -36,6 +37,12 @@ public class AllweightsLeDeviceListAdapter extends BaseAdapter {
     public void addDevice(BluetoothDevice device) {
         if (!mLeDevices.contains(device)) {
             mLeDevices.add(device);
+        }
+    }
+
+    public void addDevices(@NonNull ArrayList<BluetoothDevice> devices) {
+        for (BluetoothDevice device : devices) {
+            addDevice(device);
         }
     }
 

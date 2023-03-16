@@ -7,14 +7,14 @@ import androidx.annotation.NonNull;
 
 import java.io.IOException;
 
-class Transmision_bluetooth extends AsyncTask<String, String, Void>  // UI thread
+class TransmisionBluetooth extends AsyncTask<String, String, Void>  // UI thread
 {
     byte[] buffer = new byte[1024];
     int bytes;
     private final BluetoothSocket btSoket;
-    private final Bluetooth_listener bluetooth_listener;
+    private final BluetoothListener bluetooth_listener;
 
-    public Transmision_bluetooth(Bluetooth_listener listener, BluetoothSocket btsoket){
+    public TransmisionBluetooth(BluetoothListener listener, BluetoothSocket btsoket){
         bluetooth_listener = listener;
         this.btSoket = btsoket;
     }
@@ -49,6 +49,6 @@ class Transmision_bluetooth extends AsyncTask<String, String, Void>  // UI threa
 
     protected void onCancelled() {
         super.onCancelled();
-        bluetooth_listener.onFinisched();
+        bluetooth_listener.onStatusConnection(ConnectionStatus.DISCONNECTED);
     }
 }

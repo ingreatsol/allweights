@@ -50,10 +50,10 @@ public class AllweightsScan {
             devices.setValue(currentDevices);
         }
     };
-    private final ActivityResultLauncher<Intent> enable_ble_launcher;
+    private ActivityResultLauncher<Intent> enable_ble_launcher;
 
     @SuppressLint("MissingPermission")
-    public AllweightsScan(@NonNull FragmentActivity activity) {
+    public void init(@NonNull FragmentActivity activity) {
         enable_ble_launcher = activity.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -68,7 +68,7 @@ public class AllweightsScan {
     }
 
     @SuppressLint("MissingPermission")
-    public AllweightsScan(@NonNull Fragment fragment) {
+    public void init(@NonNull Fragment fragment) {
         enable_ble_launcher = fragment.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {

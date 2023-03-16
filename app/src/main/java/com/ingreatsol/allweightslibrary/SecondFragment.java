@@ -17,6 +17,7 @@ import com.ingreatsol.allweights.AllweightsConnect;
 import com.ingreatsol.allweights.AllweightsData;
 import com.ingreatsol.allweights.AllweightsUtils;
 import com.ingreatsol.allweights.ConnectionStatus;
+import com.ingreatsol.allweights.exceptions.AllweightsException;
 import com.ingreatsol.allweightslibrary.databinding.FragmentSecondBinding;
 
 public class SecondFragment extends Fragment {
@@ -38,7 +39,7 @@ public class SecondFragment extends Fragment {
                     binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
                 }
             }
-            if (allweightsData.bateryPercent != null){
+            if (allweightsData.bateryPercent != null) {
                 binding.progressbar.setProgress((int) (((allweightsData.bateryPercent - AllweightsUtils.RANGO_MINIMO_BATERIA) / AllweightsUtils.LIMITE_BATERIA) * 100));
             }
         }
@@ -50,7 +51,6 @@ public class SecondFragment extends Fragment {
         }
     };
 
-    @SuppressLint("MissingPermission")
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
@@ -61,7 +61,11 @@ public class SecondFragment extends Fragment {
 
         assert getArguments() != null;
 
-        allweightsConnect = new AllweightsConnect(requireActivity(), getArguments().getParcelable("device"));
+        String deviceAddres = getArguments().getString("deviceAddress");
+        Integer deviceType = getArguments().getInt("deviceType");
+
+        allweightsConnect = new AllweightsConnect();
+        allweightsConnect.setDevice(deviceAddres, deviceType);
 
         return binding.getRoot();
     }
@@ -70,29 +74,29 @@ public class SecondFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         binding.buttonEncerar.setOnClickListener(l -> {
-            if (!allweightsConnect.waxScale()){
+            if (!allweightsConnect.waxScale()) {
                 Toast.makeText(requireActivity(), "Error al encerar", Toast.LENGTH_LONG).show();
             }
         });
         binding.buttonCalibrar1.setOnClickListener(l -> {
-            if (!allweightsConnect.calibrateScale(1)){
+            if (!allweightsConnect.calibrateScale(1)) {
                 Toast.makeText(requireActivity(), "Error al calibrar", Toast.LENGTH_LONG).show();
             }
         });
         binding.buttonVelocidad2.setOnClickListener(l -> {
-            if (!allweightsConnect.sampleQuantity(2)){
+            if (!allweightsConnect.sampleQuantity(2)) {
                 Toast.makeText(requireActivity(), "Error al escribir la velocidad", Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public void onResume() {
         super.onResume();
         allweightsConnect.getData().observe(requireActivity(), dataObserver);
         allweightsConnect.getConnectionStatus().observe(requireActivity(), estadoConexionObserve);
         allweightsConnect.registerService(requireActivity());
+        connect();
     }
 
     @SuppressLint("MissingPermission")
@@ -102,6 +106,7 @@ public class SecondFragment extends Fragment {
         allweightsConnect.getData().removeObserver(dataObserver);
         allweightsConnect.getConnectionStatus().removeObserver(estadoConexionObserve);
         allweightsConnect.unRegisterService(requireActivity());
+        allweightsConnect.disconnect();
     }
 
     @SuppressLint("MissingPermission")
@@ -110,6 +115,15 @@ public class SecondFragment extends Fragment {
         super.onDestroyView();
         binding = null;
         allweightsConnect.destroyService(requireActivity());
+    }
+
+    @SuppressLint("MissingPermission")
+    public void connect(){
+        try {
+            allweightsConnect.connect(requireActivity());
+        } catch (AllweightsException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

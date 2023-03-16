@@ -10,27 +10,25 @@ import androidx.annotation.RequiresPermission;
 import java.io.IOException;
 import java.util.UUID;
 
-class Bluetooth extends AsyncTask<Void , Void, Void>
-{
+class BluetoothConnectTask extends AsyncTask<Void, Void, Void> {
     BluetoothSocket btSocket = null;
-    private boolean isBtConnected = false;
-    private boolean ConnectSuccess = false;
+    private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
     BluetoothAdapter myBluetooth = null;
     BluetoothDevice dispositivo = null;
     private final String address;
-    private final Bluetooth_listener listener;
+    private final BluetoothListener listener;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     @RequiresPermission(allOf = {
             "android.permission.BLUETOOTH_SCAN",
             "android.permission.BLUETOOTH_CONNECT"
     })
-    public Bluetooth(Bluetooth_listener _listener, String ADDRESS){
+    public BluetoothConnectTask(BluetoothListener _listener, String ADDRESS) {
         this.listener = _listener;
         this.address = ADDRESS;
     }
 
-    public boolean sendData(String data){
+    public boolean sendData(String data) {
         if (btSocket != null) {
             try {
                 btSocket.getOutputStream().write(data.getBytes());
@@ -42,9 +40,6 @@ class Bluetooth extends AsyncTask<Void , Void, Void>
         return false;
     }
 
-    protected void onPreExecute() {
-    }
-
     @RequiresPermission(allOf = {
             "android.permission.BLUETOOTH_SCAN",
             "android.permission.BLUETOOTH_CONNECT"
@@ -52,16 +47,19 @@ class Bluetooth extends AsyncTask<Void , Void, Void>
     @Override
     protected Void doInBackground(Void... params) {
         try {
-            if (btSocket == null || !isBtConnected) {
+            if (btSocket == null || connectionStatus == ConnectionStatus.DISCONNECTED) {
+                connectionStatus = ConnectionStatus.CONNECTING;
+                listener.onStatusConnection(connectionStatus);
+
                 myBluetooth = BluetoothAdapter.getDefaultAdapter();
                 dispositivo = myBluetooth.getRemoteDevice(this.address);
                 btSocket = dispositivo.createInsecureRfcommSocketToServiceRecord(myUUID);
                 myBluetooth.cancelDiscovery();
                 btSocket.connect();
-                ConnectSuccess = true;
+                connectionStatus = ConnectionStatus.CONNECTED;
             }
         } catch (IOException e) {
-            ConnectSuccess = false;
+            connectionStatus = ConnectionStatus.DISCONNECTED;
         }
         return null;
     }
@@ -69,29 +67,28 @@ class Bluetooth extends AsyncTask<Void , Void, Void>
     protected void onPostExecute(Void result) {
         super.onPostExecute(result);
 
-        if (!ConnectSuccess) {
+        if (connectionStatus == ConnectionStatus.CONNECTED) {
+            listener.initask(btSocket, dispositivo);
+        } else {
             super.onCancelled();
             try {
                 btSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException ignored) {
             }
-            //finish();
-            listener.onFinisched();
-        } else {
-            isBtConnected = true;
-            listener.initask(btSocket, dispositivo);
-
         }
+
+        listener.onStatusConnection(connectionStatus);
     }
 
     @Override
     protected void finalize() throws Throwable {
         btSocket.close();
+        connectionStatus = ConnectionStatus.DISCONNECTED;
+        listener.onStatusConnection(connectionStatus);
         super.finalize();
     }
 
-    public void finish(){
+    public void finish() {
         try {
             finalize();
         } catch (Throwable throwable) {

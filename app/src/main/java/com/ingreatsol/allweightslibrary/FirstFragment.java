@@ -55,7 +55,8 @@ public class FirstFragment extends Fragment {
     ) {
 
         binding = FragmentFirstBinding.inflate(inflater, container, false);
-        bluetoothScan = new AllweightsScan(this);
+        bluetoothScan = new AllweightsScan();
+        bluetoothScan.init(this);
 
         mLeDeviceListAdapter = new LeDeviceListAdapter(requireActivity(),
                 R.layout.listitem_device,
@@ -86,7 +87,8 @@ public class FirstFragment extends Fragment {
                 bluetoothScan.cancelDiscovery();
 
                 Bundle b = new Bundle();
-                b.putParcelable("device", device);
+                b.putString("deviceAddress", device.getAddress());
+                b.putInt("deviceType", device.getType());
 
                 NavHostFragment.findNavController(FirstFragment.this)
                         .navigate(R.id.action_FirstFragment_to_SecondFragment, b);

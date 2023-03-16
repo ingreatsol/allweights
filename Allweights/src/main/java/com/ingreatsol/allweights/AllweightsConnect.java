@@ -1,5 +1,6 @@
 package com.ingreatsol.allweights;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -129,7 +130,7 @@ public class AllweightsConnect {
         activity.unregisterReceiver(mGattUpdateReceiver);
     }
 
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    @SuppressLint("MissingPermission")
     public void disconnect(){
         if (ConnectionStatus.DISCONNECTED == connectionStatus.getValue()){
             return;

@@ -105,10 +105,7 @@ public class AllweightsScan {
         }
     }
 
-    @RequiresPermission(allOf = {
-            "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
-    })
+    @RequiresPermission("android.permission.BLUETOOTH_SCAN")
     public void scan(@NonNull FragmentActivity activity) throws AllweightsException {
         if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             throw new AllweightsException("No soporta tecnologia ble");

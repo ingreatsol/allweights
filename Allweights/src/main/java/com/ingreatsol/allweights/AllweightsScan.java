@@ -31,7 +31,7 @@ import java.util.ArrayList;
 public class AllweightsScan {
     public static final String TAG = AllweightsScan.class.getSimpleName();
     private final MutableLiveData<Boolean> mScanning = new MutableLiveData<>(false);
-    private final MutableLiveData<ArrayList<BluetoothDevice>> devices = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<ArrayList<BluetoothDevice>> devices = new MutableLiveData<>();
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     public static final long SCAN_PERIOD = 10000;
@@ -42,7 +42,7 @@ public class AllweightsScan {
             ArrayList<BluetoothDevice> currentDevices = devices.getValue();
 
             if (currentDevices == null) {
-             currentDevices = new ArrayList<>();
+                currentDevices = new ArrayList<>();
             }
 
             currentDevices.add(result.getDevice());
@@ -136,6 +136,7 @@ public class AllweightsScan {
             }, SCAN_PERIOD);
 
             mScanning.setValue(true);
+            devices.setValue(new ArrayList<>());
             bluetoothLeScanner.startScan(leScanCallback);
         } else {
             mScanning.setValue(false);

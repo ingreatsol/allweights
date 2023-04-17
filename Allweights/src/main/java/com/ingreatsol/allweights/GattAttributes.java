@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 class GattAttributes {
-    private static final HashMap<UUID, String> attributes = new HashMap();
+    private static final HashMap<UUID, String> attributes = new HashMap<>();
     public static UUID HEART_RATE_MEASUREMENT = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
     public static UUID HEART_RATE_MEASUREMENT2 = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
     public static UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");

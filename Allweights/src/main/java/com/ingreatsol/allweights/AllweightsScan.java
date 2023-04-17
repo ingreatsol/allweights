@@ -121,7 +121,7 @@ public class AllweightsScan {
             throw new AllweightsException("Bluetooth no habilitado");
         }
 
-        if (!isLocationEnabled(activity)) {
+        if (!AllweightsUtils.isLocationEnabled(activity)) {
             throw new AllweightsException("Ubicación no habilitada");
         }
 
@@ -157,25 +157,6 @@ public class AllweightsScan {
     public Boolean isBluethoothEnabled(@NonNull Context activity) {
         BluetoothAdapter mBluetoothAdapter = getmBluetoothAdapter(activity);
         return mBluetoothAdapter != null && mBluetoothAdapter.isEnabled();
-    }
-
-    @NonNull
-    public Boolean isLocationEnabled(@NonNull Context activity) {
-        LocationManager lm = (LocationManager)
-                activity.getSystemService(Context.LOCATION_SERVICE);
-        boolean gps_enabled = false;
-        boolean network_enabled = false;
-        try {
-            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return gps_enabled && network_enabled;
     }
 
     public void launchEnableBle() {

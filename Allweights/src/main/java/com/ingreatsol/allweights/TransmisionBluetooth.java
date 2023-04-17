@@ -2,37 +2,38 @@ package com.ingreatsol.allweights;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
 
-class TransmisionBluetooth extends AsyncTask<String, String, Void>  // UI thread
-{
+class TransmisionBluetooth extends AsyncTask<String, String, Void> {
+    public static final String TAG = TransmisionBluetooth.class.getSimpleName();
     byte[] buffer = new byte[1024];
     int bytes;
     private final BluetoothSocket btSoket;
     private final BluetoothListener bluetooth_listener;
 
-    public TransmisionBluetooth(BluetoothListener listener, BluetoothSocket btsoket){
+    public TransmisionBluetooth(BluetoothListener listener, BluetoothSocket btsoket) {
         bluetooth_listener = listener;
         this.btSoket = btsoket;
     }
 
     @Override
     protected Void doInBackground(String... strings) {
-        while(this.btSoket.isConnected()) {
+        while (this.btSoket.isConnected()) {
             try {
                 Thread.sleep(10);
                 bytes = this.btSoket.getInputStream().read(buffer);
                 String strReceived = new String(buffer, 0, bytes);
-                if(strReceived.length() > 30){
+                if (strReceived.length() > 30) {
                     strReceived = "";
                 }
                 publishProgress(strReceived);
 
             } catch (InterruptedException | IOException e) {
-                e.printStackTrace();
+                Log.e(TAG, e.getMessage());
             }
         }
         return null;

@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
 
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 class BluetoothConnectTask extends AsyncTask<Void, Void, Void> {
+    public static final String TAG = BluetoothConnectTask.class.getSimpleName();
     BluetoothSocket btSocket = null;
     private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
     BluetoothAdapter myBluetooth = null;
@@ -34,6 +36,7 @@ class BluetoothConnectTask extends AsyncTask<Void, Void, Void> {
                 btSocket.getOutputStream().write(data.getBytes());
                 return true;
             } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
                 return false;
             }
         }
@@ -59,6 +62,7 @@ class BluetoothConnectTask extends AsyncTask<Void, Void, Void> {
                 connectionStatus = ConnectionStatus.CONNECTED;
             }
         } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
             connectionStatus = ConnectionStatus.DISCONNECTED;
         }
         return null;
@@ -73,7 +77,8 @@ class BluetoothConnectTask extends AsyncTask<Void, Void, Void> {
             super.onCancelled();
             try {
                 btSocket.close();
-            } catch (IOException ignored) {
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
             }
         }
 
@@ -92,7 +97,7 @@ class BluetoothConnectTask extends AsyncTask<Void, Void, Void> {
         try {
             finalize();
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            Log.e(TAG, throwable.getMessage());
         }
     }
 }

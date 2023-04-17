@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class AllweightsConnect {
-    public static final String TAG = AllweightsScan.class.getSimpleName();
+    public static final String TAG = AllweightsConnect.class.getSimpleName();
 
     private final MutableLiveData<AllweightsData> data;
     private final MutableLiveData<ConnectionStatus> connectionStatus;
@@ -245,7 +245,8 @@ public class AllweightsConnect {
                     entrada = entrada.substring(cont[0].length() + 1);
                     data.setValue(bluetoothDataRecive);
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage());
                 entrada = "";
             }
         }

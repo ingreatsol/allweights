@@ -1,8 +1,11 @@
 package com.ingreatsol.allweights;
 
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.ChecksSdkIntAtLeast;
 import androidx.annotation.NonNull;
@@ -18,6 +21,7 @@ public class AllweightsUtils {
     public static final float RANGO_MAXIMO_BATERIA = 4.2f;
     public static final float RANGO_MINIMO_BATERIA = 3.2f;
     public static final float LIMITE_BATERIA = RANGO_MAXIMO_BATERIA - RANGO_MINIMO_BATERIA;
+    public static final String TAG = AllweightsUtils.class.getSimpleName();
 
     public static final class Permission {
         public static final String[] LOCATION = new String[]{
@@ -94,5 +98,37 @@ public class AllweightsUtils {
             }
         }
         return permissionsShoulShow;
+    }
+
+    @NonNull
+    public static Boolean isLocationEnabled(@NonNull Context activity) {
+        LocationManager lm = (LocationManager)
+                activity.getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+        return gps_enabled && network_enabled;
+    }
+
+    public Boolean isBluethoothEnabled(@NonNull Context activity) {
+        BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+
+        boolean bluetooth_enabled = false;
+
+        try {
+            bluetooth_enabled = bluetoothManager.getAdapter().isEnabled();
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+        return bluetooth_enabled;
     }
 }

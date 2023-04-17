@@ -119,8 +119,8 @@ public class SecondFragment extends Fragment {
     public void connect(){
         try {
             allweightsConnect.connect(requireActivity());
-        } catch (AllweightsException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            Toast.makeText(getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
         }
     }
 

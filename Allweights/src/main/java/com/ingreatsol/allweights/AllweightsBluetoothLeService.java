@@ -26,9 +26,11 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.BluetoothStatusCodes;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -112,8 +114,16 @@ public class AllweightsBluetoothLeService extends Service {
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public boolean sendData(@NonNull final String action, @NonNull final BluetoothGattCharacteristic caractersitic) {
-        caractersitic.setValue(action.getBytes());
-        return mBluetoothGatt.writeCharacteristic(caractersitic);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            int result = mBluetoothGatt.writeCharacteristic(caractersitic,
+                    action.getBytes(),
+                    BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+
+            return result == BluetoothStatusCodes.SUCCESS;
+        } else {
+            caractersitic.setValue(action.getBytes());
+            return mBluetoothGatt.writeCharacteristic(caractersitic);
+        }
     }
 
     private void broadcastUpdate(@NonNull final BluetoothGattCharacteristic characteristic) {
@@ -300,15 +310,16 @@ public class AllweightsBluetoothLeService extends Service {
         mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
 
         // This is specific to Heart Rate Measurement.
-        if (GattAttributes.HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
+        if (GattAttributes.HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())
+                || GattAttributes.HEART_RATE_MEASUREMENT2.equals(characteristic.getUuid())) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(GattAttributes.CLIENT_CHARACTERISTIC_CONFIG);
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            mBluetoothGatt.writeDescriptor(descriptor);
-        }
-        if (GattAttributes.HEART_RATE_MEASUREMENT2.equals(characteristic.getUuid())) {
-            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(GattAttributes.CLIENT_CHARACTERISTIC_CONFIG);
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            mBluetoothGatt.writeDescriptor(descriptor);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                mBluetoothGatt.writeDescriptor(descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            } else {
+                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                mBluetoothGatt.writeDescriptor(descriptor);
+            }
         }
     }
 

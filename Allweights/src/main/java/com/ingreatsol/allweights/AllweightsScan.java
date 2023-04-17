@@ -11,8 +11,10 @@ import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -90,7 +92,7 @@ public class AllweightsScan {
         return mScanning;
     }
 
-    @RequiresPermission("android.permission.BLUETOOTH_SCAN")
+    @SuppressLint("MissingPermission")
     public void stopScan() {
         if (Boolean.TRUE.equals(mScanning.getValue())) {
             mScanning.setValue(false);
@@ -111,20 +113,24 @@ public class AllweightsScan {
             throw new AllweightsException("No soporta tecnologia ble");
         }
 
-        if (AllweightsUtils.isMissingPermisionsEscanearBluetooth(activity.getApplication())) {
-            throw new AllweightsException("Faltan permisos");
-        }
-
-        BluetoothAdapter mBluetoothAdapter = getmBluetoothAdapter(activity);
-
-        // Checks if Bluetooth is supported on the device.
-        if (mBluetoothAdapter == null) {
+        if (!isSuportBluetoothConnection(activity)) {
             throw new AllweightsException("No soporta conexión bluetooth.");
         }
 
-        if (!mBluetoothAdapter.isEnabled()) {
-            LaunchEnableBle();
-            return;
+        if (!isBluethoothEnabled(activity)) {
+            throw new AllweightsException("Bluetooth no habilitado");
+        }
+
+        if (!isLocationEnabled(activity)) {
+            throw new AllweightsException("Ubicación no habilitada");
+        }
+
+        if (AllweightsUtils.isMissingPermisionLocation(activity)) {
+            throw new AllweightsException("Faltan permisos de ubicacion");
+        }
+
+        if (AllweightsUtils.isMissingPermisionBluetooth(activity)) {
+            throw new AllweightsException("Faltan permisos de bluetooth");
         }
 
         bluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
@@ -144,12 +150,45 @@ public class AllweightsScan {
         }
     }
 
-    private void LaunchEnableBle() {
+    public boolean isSuportBluetoothConnection(Context activity){
+        return getmBluetoothAdapter(activity) != null;
+    }
+
+    public Boolean isBluethoothEnabled(@NonNull Context activity) {
+        BluetoothAdapter mBluetoothAdapter = getmBluetoothAdapter(activity);
+        return mBluetoothAdapter != null && mBluetoothAdapter.isEnabled();
+    }
+
+    @NonNull
+    public Boolean isLocationEnabled(@NonNull Context activity) {
+        LocationManager lm = (LocationManager)
+                activity.getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return gps_enabled && network_enabled;
+    }
+
+    public void launchEnableBle() {
         Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         enable_ble_launcher.launch(enableBT);
     }
 
-    private BluetoothAdapter getmBluetoothAdapter(FragmentActivity activity) {
+    public void launchEnableLocation() {
+        Intent enableBT = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        enable_ble_launcher.launch(enableBT);
+    }
+
+    private BluetoothAdapter getmBluetoothAdapter(Context activity) {
         if (mBluetoothAdapter == null) {
             final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
             mBluetoothAdapter = bluetoothManager.getAdapter();

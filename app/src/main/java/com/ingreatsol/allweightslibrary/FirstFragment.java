@@ -2,6 +2,7 @@ package com.ingreatsol.allweightslibrary;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -173,18 +174,22 @@ public class FirstFragment extends Fragment {
     }
 
     @SuppressLint("MissingPermission")
-    public void ckeckPermissionEscanearBluetooth(FragmentActivity fragmentActivity) {
-        String message = "Necesita el permiso de escanear bluetooth para detectar la balanza. ¿Desea otorgarlo?";
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            message = "Necesita el permiso de escanear bluetooth y de ubicación para detectar la balanza. ¿Desea otorgarlos?";
-        }
-        if (AllweightsUtils.isMissingPermisionsEscanearBluetooth(fragmentActivity.getApplication())) {
+    public void ckeckPermissionEscanearBluetooth(Context fragmentActivity) {
+        if (AllweightsUtils.isMissingPermisionBluetooth(fragmentActivity)) {
             new MaterialAlertDialogBuilder(fragmentActivity)
-                    .setTitle("Permiso denegado")
-                    .setMessage(message)
+                    .setTitle("Permiso de buetooth")
+                    .setMessage("Necesita el permiso de escanear bluetooth para detectar la balanza. ¿Desea otorgarlo?")
                     .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
                     .setPositiveButton("Activar permiso", (dialogAcept, which) ->
-                            selectTipeLauncherPermission(AllweightsUtils.getPermissionEscanearBluetooth().toArray(new String[0])))
+                            selectTipeLauncherPermission(AllweightsUtils.Permission.BLUETOOTH))
+                    .show();
+        } else if (AllweightsUtils.isMissingPermisionLocation(fragmentActivity)) {
+            new MaterialAlertDialogBuilder(fragmentActivity)
+                    .setTitle("Permiso de ubicación")
+                    .setMessage("Necesita el permiso de ubicación para detectar la balanza. ¿Desea otorgarlo?")
+                    .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
+                    .setPositiveButton("Activar permiso", (dialogAcept, which) ->
+                            selectTipeLauncherPermission(AllweightsUtils.Permission.LOCATION))
                     .show();
         } else {
             try {

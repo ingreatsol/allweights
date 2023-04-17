@@ -85,10 +85,16 @@ In a fragment or activity, instantiate the `AllweightsScan` class and execute th
 ```xml
 AllweightsScan bluetoothScan = new AllweightsScan();
 
-bluetoothScan.init(this,
-        R.layout.listitem_device,
-        R.id.device_address,
-        R.id.device_name);
+LeDeviceListAdapter mLeDeviceListAdapter = new LeDeviceListAdapter(requireActivity(),
+                R.layout.listitem_device,
+                R.id.device_address,
+                R.id.device_name);
+
+bluetoothScan.getDevices().observe(requireActivity(), devices -> {
+            mLeDeviceListAdapter.clear();
+            mLeDeviceListAdapter.addDevices(devices);
+            mLeDeviceListAdapter.notifyDataSetChanged();
+        });
 ```
 To start the bluetooths scan, you have to use the `scan` method, and to stop it, with the `stopScan` method (you must have enabled all the permissions needed to perform the scan before).
 ```java
@@ -154,7 +160,8 @@ binding.dispositivos.setOnItemClickListener((parent, _view, position, id) -> {
                 bluetoothScan.cancelDiscovery();
 
                 Intent intent = new Intent(this, SecondActivity.class);
-                intent.putExtra("device", device);
+                intent.putExtra("deviceAddress", device.getAddress());
+                intent.putExtra("deviceType", device.getType());
                 startActivity(intent);
                 finish();
             } catch (Exception e) {
@@ -166,32 +173,45 @@ binding.dispositivos.setOnItemClickListener((parent, _view, position, id) -> {
 
         binding.button.setOnClickListener(l -> bluetoothScan.scan(this));
 ```
+Override methods 
+```java
+@Override
+    public void onResume() {
+        super.onResume();
+        bluetoothScan.getScanState().observe(requireActivity(), estadoCOnexionObserve);
+        bluetoothScan.scan(requireActivity());
+    }
+    
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onPause() {
+        super.onPause();
+        bluetoothScan.stopScan();
+        bluetoothScan.getScanState().removeObserver(estadoCOnexionObserve);
+    }
+```
+
 ## Connect to allweights
-To connect to allweights you have to instantiate the `AllweightsConnect` object and initialize the allweights service that receives data from the scale with the `init` method, sending as parameter the context of the activity and the `BluetoothDevice` to which it is going to connect.
+To connect to allweights you have to instantiate the `AllweightsConnect` object and assign the mac and device type previously passed with the `setDevice` method.
 ```java
 // In fragments paste this code in the `onCreateView` method
         
 AllweightsConnect   allweightsConnect = new AllweightsConnect();
 
-BluetoothDevice device = getArguments().getParcelable("device");
+String deviceAddres = getArguments().getString("deviceAddress");
+Integer deviceType = getArguments().getInt("deviceType");
 
-allweightsConnect.init(requireActivity(), device);
+allweightsConnect.setDevice(deviceAddres, deviceType);
 ```
 ```java
 //In activities paste this code in the `onCreate` method
 
 AllweightsConnect allweightsConnect = new AllweightsConnect();
 
-BluetoothDevice device = getIntent().getExtras().getParcelable("device");
+String deviceAddres = getIntent().getExtras().getString("deviceAddress");
+Integer deviceType = getIntent().getExtras().getInt("deviceType");
 
-allweightsConnect.init(this, device);
-```
-Or by mac y deviceType
-```java
-String mac = device.getAddress();
-Integer type = device.getType();
-
-allweightsConnect.init(this, mac, type);
+allweightsConnect.setDevice(deviceAddres, deviceType);
 ```
 ### Method `getData`
 The `getData` method returns a `LiveData` object to which an observer must be assigned to update the weights of the scales.

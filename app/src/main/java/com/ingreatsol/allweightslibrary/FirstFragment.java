@@ -57,7 +57,6 @@ public class FirstFragment extends Fragment {
             @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
-
         binding = FragmentFirstBinding.inflate(inflater, container, false);
         bluetoothScan = new AllweightsScan();
 
@@ -256,7 +255,7 @@ public class FirstFragment extends Fragment {
     }
 
     @NonNull
-    public Intent ajustesAplicacion(@NonNull FragmentActivity fragmentActivity) {
+    public Intent ajustesAplicacion(@NonNull Context fragmentActivity) {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.setData(Uri.parse("package:" + fragmentActivity.getPackageName()));

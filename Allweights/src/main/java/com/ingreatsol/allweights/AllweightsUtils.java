@@ -38,28 +38,15 @@ public class AllweightsUtils {
             case "android.permission.ACCESS_FINE_LOCATION":
             case "android.permission.ACCESS_COARSE_LOCATION":
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) return false;
+                break;
             case "android.permission.BLUETOOTH_SCAN":
             case "android.Permission.BLUETOOTH_ADVERTISE":
             case "android.permission.BLUETOOTH_CONNECT":
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return false;
+                break;
         }
+
         return (ContextCompat.checkSelfPermission(context, permissionSend) != PackageManager.PERMISSION_GRANTED);
-    }
-
-    @NonNull
-    public static ArrayList<String> getPermissionEscanearBluetooth() {
-        ArrayList<String> list = new ArrayList<>();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            list.addAll(Arrays.asList(Permission.LOCATION));
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            list.addAll(Arrays.asList(Permission.BLUETOOTH));
-        }
-        return list;
-    }
-
-    public static boolean isMissingPermisionsEscanearBluetooth(Context application) {
-        return isMissingPermisionLocation(application) && isMissingPermisionBluetooth(application);
     }
 
     public static boolean isRequiredPermisionLocation() {
@@ -73,20 +60,20 @@ public class AllweightsUtils {
 
     public static boolean isMissingPermisionLocation(Context context) {
         if (!isRequiredPermisionLocation()) {
-            return true;
+            return false;
         }
 
         return Arrays.stream(Permission.LOCATION)
-                .noneMatch(per -> checkPermissionsIfNecessary(context, per));
+                .anyMatch(per -> checkPermissionsIfNecessary(context, per));
     }
 
     public static boolean isMissingPermisionBluetooth(Context context) {
         if (!isRequiredPermisionBluetooth()) {
-            return true;
+            return false;
         }
 
         return Arrays.stream(Permission.BLUETOOTH)
-                .noneMatch(per -> checkPermissionsIfNecessary(context, per));
+                .anyMatch(per -> checkPermissionsIfNecessary(context, per));
     }
 
     @NonNull
@@ -119,7 +106,7 @@ public class AllweightsUtils {
         return gps_enabled && network_enabled;
     }
 
-    public Boolean isBluethoothEnabled(@NonNull Context activity) {
+    public static Boolean isBluethoothEnabled(@NonNull Context activity) {
         BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
 
         boolean bluetooth_enabled = false;

@@ -1,13 +1,15 @@
 package com.ingreatsol.allweightslibrary;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,8 +40,9 @@ public class FirstFragment extends Fragment {
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<String[]> multiplePermissionLauncher;
     private ActivityResultLauncher<Intent> openAppSettingsLauncher;
+    private ActivityResultLauncher<Intent> enable_ble_loc_launcher;
     private LeDeviceListAdapter mLeDeviceListAdapter;
-
+    private Boolean permisoDenegado = false;
     Observer<Boolean> estadoCOnexionObserve = new Observer<Boolean>() {
         @Override
         public void onChanged(Boolean estado) {
@@ -57,7 +60,6 @@ public class FirstFragment extends Fragment {
 
         binding = FragmentFirstBinding.inflate(inflater, container, false);
         bluetoothScan = new AllweightsScan();
-        bluetoothScan.init(this);
 
         mLeDeviceListAdapter = new LeDeviceListAdapter(requireActivity(),
                 R.layout.listitem_device,
@@ -100,14 +102,14 @@ public class FirstFragment extends Fragment {
 
         binding.dispositivos.setAdapter(mLeDeviceListAdapter);
 
-        binding.button.setOnClickListener(l -> ckeckPermissionEscanearBluetooth(requireActivity()));
+        binding.button.setOnClickListener(l -> scanear());
     }
 
     @Override
     public void onResume() {
         super.onResume();
         bluetoothScan.getScanState().observe(requireActivity(), estadoCOnexionObserve);
-        ckeckPermissionEscanearBluetooth(requireActivity());
+        scanear();
     }
 
     @SuppressLint("MissingPermission")
@@ -128,44 +130,37 @@ public class FirstFragment extends Fragment {
     public void initLauchers() {
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
-                    if (isGranted) {
-                        try {
-                            bluetoothScan.scan(requireActivity());
-                        } catch (AllweightsException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        manejarDenegacionDePermiso();
-                        Toast.makeText(requireActivity(), "Permisos denegados", Toast.LENGTH_LONG).show();
+                    if (!isGranted) {
+                        permisoDenegado = true;
                     }
                 });
 
         multiplePermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
             boolean resultStatus = result.entrySet().stream().allMatch(Map.Entry::getValue);
-            if (resultStatus) {
-                try {
-                    bluetoothScan.scan(requireActivity());
-                } catch (AllweightsException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                manejarDenegacionDePermiso();
-                Toast.makeText(requireActivity(), "Permisos denegados", Toast.LENGTH_LONG).show();
+            if (!resultStatus) {
+                permisoDenegado = true;
             }
         });
 
-        openAppSettingsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    try {
-                        bluetoothScan.scan(requireActivity());
-                    } catch (AllweightsException e) {
-                        e.printStackTrace();
-                    }
-                });
+        enable_ble_loc_launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                result -> Log.d("Test", result.toString()));
 
+        openAppSettingsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                result -> Log.d("Test", result.toString()));
+    }
+
+    public void launchEnableBle() {
+        Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        enable_ble_loc_launcher.launch(enableBT);
+    }
+
+    public void launchEnableLocation() {
+        Intent enableBT = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        enable_ble_loc_launcher.launch(enableBT);
     }
 
     private void selectTipeLauncherPermission(@NonNull String... permissions) {
+        permisoDenegado = false;
         if (permissions.length == 1) {
             requestPermissionLauncher.launch(permissions[0]);
         } else if (permissions.length > 1) {
@@ -174,23 +169,57 @@ public class FirstFragment extends Fragment {
     }
 
     @SuppressLint("MissingPermission")
-    public void ckeckPermissionEscanearBluetooth(Context fragmentActivity) {
-        if (AllweightsUtils.isMissingPermisionBluetooth(fragmentActivity)) {
-            new MaterialAlertDialogBuilder(fragmentActivity)
-                    .setTitle("Permiso de buetooth")
-                    .setMessage("Necesita el permiso de escanear bluetooth para detectar la balanza. ¿Desea otorgarlo?")
+    public void scanear() {
+        Context context = getContext();
+        assert context != null;
+        if (!AllweightsUtils.isBluethoothEnabled(context)) {
+            new MaterialAlertDialogBuilder(context)
+                    .setTitle("Bluetooth desactivado")
+                    .setMessage("Se necesita activar el bluetooth para poder detectar dispositivos bluetooth. ¿Desea activarlo?")
                     .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
-                    .setPositiveButton("Activar permiso", (dialogAcept, which) ->
-                            selectTipeLauncherPermission(AllweightsUtils.Permission.BLUETOOTH))
+                    .setPositiveButton("Activar", (dialogAcept, which) -> {
+                        dialogAcept.dismiss();
+                        launchEnableBle();
+                    })
                     .show();
-        } else if (AllweightsUtils.isMissingPermisionLocation(fragmentActivity)) {
-            new MaterialAlertDialogBuilder(fragmentActivity)
-                    .setTitle("Permiso de ubicación")
-                    .setMessage("Necesita el permiso de ubicación para detectar la balanza. ¿Desea otorgarlo?")
+        } else if (AllweightsUtils.isRequiredPermisionLocation() && !AllweightsUtils.isLocationEnabled(context)) {
+            new MaterialAlertDialogBuilder(context)
+                    .setTitle("Ubicacion desactivada")
+                    .setMessage("Se necesita activar la ubicación para poder detectar dispositivos bluetooth. ¿Desea activarla?")
                     .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
-                    .setPositiveButton("Activar permiso", (dialogAcept, which) ->
-                            selectTipeLauncherPermission(AllweightsUtils.Permission.LOCATION))
+                    .setPositiveButton("Activar", (dialogAcept, which) -> {
+                        dialogAcept.dismiss();
+                        launchEnableLocation();
+                    })
                     .show();
+        } else if (AllweightsUtils.isMissingPermisionBluetooth(context)) {
+            if (permisoDenegado) {
+                manejarDenegacionDePermiso(AllweightsUtils.Permission.BLUETOOTH);
+            } else {
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle("Permiso de buetooth")
+                        .setMessage("Necesita el permiso de escanear bluetooth para detectar la balanza. ¿Desea otorgarlo?")
+                        .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
+                        .setPositiveButton("Activar permiso", (dialogAcept, which) -> {
+                            dialogAcept.dismiss();
+                            selectTipeLauncherPermission(AllweightsUtils.Permission.BLUETOOTH);
+                        })
+                        .show();
+            }
+        } else if (AllweightsUtils.isMissingPermisionLocation(context)) {
+            if (permisoDenegado) {
+                manejarDenegacionDePermiso(AllweightsUtils.Permission.LOCATION);
+            } else {
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle("Permiso de ubicación")
+                        .setMessage("Necesita el permiso de ubicación para detectar la balanza. ¿Desea otorgarlo?")
+                        .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
+                        .setPositiveButton("Activar permiso", (dialogAcept, which) -> {
+                            dialogAcept.dismiss();
+                            selectTipeLauncherPermission(AllweightsUtils.Permission.LOCATION);
+                        })
+                        .show();
+            }
         } else {
             try {
                 bluetoothScan.scan(requireActivity());
@@ -200,16 +229,15 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    private void manejarDenegacionDePermiso() {
-        ArrayList<String> permissionsShould = AllweightsUtils
-                .shouldMapPermission(requireActivity(), AllweightsUtils.getPermissionEscanearBluetooth().toArray(new String[0]));
+    private void manejarDenegacionDePermiso(@NonNull String... permissionSend) {
+        ArrayList<String> permissionsShould = AllweightsUtils.shouldMapPermission(requireActivity(), permissionSend);
         if (permissionsShould.size() > 0) {
             new MaterialAlertDialogBuilder(requireActivity())
                     .setTitle("Estas seguro?")
                     .setMessage("Allweights no puede funcionar correctamente si deniegas este permiso")
                     .setNegativeButton("Si, denegar", (dialogCancel, which) -> dialogCancel.dismiss())
                     .setPositiveButton("Intentar de nuevo", (dialogAcept, which) -> {
-                        selectTipeLauncherPermission(AllweightsUtils.getPermissionEscanearBluetooth().toArray(new String[0]));
+                        selectTipeLauncherPermission(permissionsShould.toArray(new String[0]));
                         dialogAcept.dismiss();
                     })
                     .show();
@@ -218,7 +246,11 @@ public class FirstFragment extends Fragment {
                     .setTitle("Configuración de la aplicación?")
                     .setMessage("El permiso solicitado ha sido denegado, para activar este permiso debe ir a la configuración de la aplicación")
                     .setNegativeButton("Entrar sin permiso", (dialogCancel, which) -> dialogCancel.dismiss())
-                    .setPositiveButton("Ir a configuración", (dialogAcept, which) -> openAppSettingsLauncher.launch(ajustesAplicacion(requireActivity())))
+                    .setPositiveButton("Ir a configuración", (dialogAcept, which) -> {
+                        permisoDenegado = false;
+                        openAppSettingsLauncher.launch(ajustesAplicacion(requireActivity()));
+                        dialogAcept.dismiss();
+                    })
                     .show();
         }
     }

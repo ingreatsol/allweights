@@ -99,7 +99,6 @@ public class SecondFragment extends Fragment {
         connect();
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public void onPause() {
         super.onPause();
@@ -109,7 +108,6 @@ public class SecondFragment extends Fragment {
         allweightsConnect.disconnect();
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public void onDestroyView() {
         super.onDestroyView();

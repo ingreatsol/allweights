@@ -218,7 +218,7 @@ public class AllweightsBluetoothLeService extends Service {
             Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
 
             mBluetoothGatt.connect();
-
+            forceConnect();
             sendStateConection();
 
             return;
@@ -231,10 +231,23 @@ public class AllweightsBluetoothLeService extends Service {
         }
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
-        mBluetoothGatt = mDevice.connectGatt(this, false, mGattCallback);
+        mBluetoothGatt = mDevice.connectGatt(this, true, mGattCallback);
         Log.d(TAG, "Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
         sendStateConection();
+    }
+
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    public void forceConnect() {
+        if(mBluetoothDeviceAddress != null) {
+            Log.d(TAG, "Trying to force connection: "+mBluetoothDeviceAddress);
+            mBluetoothGatt.disconnect();
+            final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mBluetoothDeviceAddress);
+            mBluetoothGatt = device.connectGatt(this, true, mGattCallback);
+        }
+        else {
+            Log.d(TAG, "Force connect called without previous connection");
+        }
     }
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")

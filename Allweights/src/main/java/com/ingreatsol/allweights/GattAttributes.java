@@ -33,6 +33,7 @@ class GattAttributes {
     public final static String ACTION_GATT_CONNECTED = "com.ingreatsol.bluetooth.le.ACTION_GATT_CONNECTED";
     public final static String ACTION_GATT_CONNECTING = "com.ingreatsol.bluetooth.le.ACTION_GATT_CONNECTING";
     public final static String ACTION_GATT_DISCONNECTED = "com.ingreatsol.bluetooth.le.ACTION_GATT_DISCONNECTED";
+    public final static String ACTION_GATT_DISCONNECTING = "com.ingreatsol.bluetooth.le.ACTION_GATT_DISCONNECTING";
     public final static String ACTION_GATT_SERVICES_DISCOVERED = "com.ingreatsol.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_DATA_AVAILABLE = "com.ingreatsol.bluetooth.le.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_DATA = "com.ingreatsol.bluetooth.le.EXTRA_DATA";

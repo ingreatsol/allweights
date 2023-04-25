@@ -1,5 +1,5 @@
 package com.ingreatsol.allweights;
 
 public enum ConnectionStatus {
-    CONNECTED, DISCONNECTED, CONNECTING
+    CONNECTED, CONNECTING, DISCONNECTED, DISCONNECTING
 }

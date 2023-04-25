@@ -89,7 +89,7 @@ public class SecondFragment extends Fragment {
         });
 
         binding.buttonConectar.setOnClickListener(l -> connect());
-        binding.buttonDesconectar.setOnClickListener(l -> allweightsConnect.disconnect(requireActivity()));
+        binding.buttonDesconectar.setOnClickListener(l -> allweightsConnect.disconnect());
     }
 
     @Override
@@ -107,7 +107,7 @@ public class SecondFragment extends Fragment {
         allweightsConnect.getData().removeObserver(dataObserver);
         allweightsConnect.getConnectionStatus().removeObserver(estadoConexionObserve);
         allweightsConnect.unRegisterService(requireActivity());
-        allweightsConnect.disconnect(requireActivity());
+        allweightsConnect.disconnect();
     }
 
     @Override

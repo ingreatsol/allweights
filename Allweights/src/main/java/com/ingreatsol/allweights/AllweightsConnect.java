@@ -54,6 +54,9 @@ public class AllweightsConnect {
                 case GattAttributes.ACTION_GATT_DISCONNECTED:
                     connectionStatus.postValue(ConnectionStatus.DISCONNECTED);
                     break;
+                case GattAttributes.ACTION_GATT_DISCONNECTING:
+                    connectionStatus.postValue(ConnectionStatus.DISCONNECTING);
+                    break;
                 case GattAttributes.ACTION_GATT_SERVICES_DISCOVERED: {
                     if (mBluetoothLeService != null) {
                         displayGattServices(mBluetoothLeService.getSupportedGattServices());
@@ -116,10 +119,6 @@ public class AllweightsConnect {
             throw new AllweightsException("Device not assigned");
         }
 
-        if (ConnectionStatus.CONNECTED == connectionStatus.getValue()) {
-            return;
-        }
-
         if (this.deviceType == 1) {
             connectBluetoothV1Task();
         } else {
@@ -137,17 +136,8 @@ public class AllweightsConnect {
     }
 
     @SuppressLint("MissingPermission")
-    public void disconnect(Context context) {
+    public void disconnect() {
         if (ConnectionStatus.DISCONNECTED == connectionStatus.getValue()) {
-            return;
-        }
-
-        if (ConnectionStatus.CONNECTING == connectionStatus.getValue()) {
-            try {
-                connect(context);
-            } catch (AllweightsException e) {
-                Log.e(TAG, "", e);
-            }
             return;
         }
 

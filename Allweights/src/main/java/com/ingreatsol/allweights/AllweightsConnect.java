@@ -112,7 +112,7 @@ public class AllweightsConnect {
             "android.permission.BLUETOOTH_SCAN",
             "android.permission.BLUETOOTH_CONNECT"
     })
-    public void connect(@NonNull FragmentActivity activity) throws AllweightsException {
+    public void connect(@NonNull Context context) throws AllweightsException {
         if (deviceAddress == null || deviceType == null) {
             throw new AllweightsException("Device not assigned");
         }
@@ -124,10 +124,10 @@ public class AllweightsConnect {
         if (this.deviceType == 1) {
             connectBluetoothV1Task();
         } else {
-            if (mBluetoothLeService == null){
-                Intent gattServiceIntent = new Intent(activity, AllweightsBluetoothLeService.class);
-                activity.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-            }else {
+            if (mBluetoothLeService == null) {
+                Intent gattServiceIntent = new Intent(context, AllweightsBluetoothLeService.class);
+                context.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+            } else {
                 mBluetoothLeService.connect(deviceAddress);
             }
         }
@@ -138,15 +138,24 @@ public class AllweightsConnect {
     }
 
     @SuppressLint("MissingPermission")
-    public void disconnect() {
+    public void disconnect(Context context) {
         if (ConnectionStatus.DISCONNECTED == connectionStatus.getValue()) {
+            return;
+        }
+
+        if (ConnectionStatus.CONNECTING == connectionStatus.getValue()) {
+            try {
+                connect(context);
+            } catch (AllweightsException e) {
+                Log.e(TAG, "", e);
+            }
             return;
         }
 
         if (deviceType == 1) {
             taskbluetooth.finish();
         } else {
-            if (mBluetoothLeService != null){
+            if (mBluetoothLeService != null) {
                 mBluetoothLeService.disconnect();
             }
         }

@@ -17,7 +17,6 @@ import com.ingreatsol.allweights.AllweightsConnect;
 import com.ingreatsol.allweights.AllweightsData;
 import com.ingreatsol.allweights.AllweightsUtils;
 import com.ingreatsol.allweights.ConnectionStatus;
-import com.ingreatsol.allweights.exceptions.AllweightsException;
 import com.ingreatsol.allweightslibrary.databinding.FragmentSecondBinding;
 
 public class SecondFragment extends Fragment {
@@ -90,7 +89,7 @@ public class SecondFragment extends Fragment {
         });
 
         binding.buttonConectar.setOnClickListener(l -> connect());
-        binding.buttonDesconectar.setOnClickListener(l -> allweightsConnect.disconnect());
+        binding.buttonDesconectar.setOnClickListener(l -> allweightsConnect.disconnect(requireActivity()));
     }
 
     @Override
@@ -108,7 +107,7 @@ public class SecondFragment extends Fragment {
         allweightsConnect.getData().removeObserver(dataObserver);
         allweightsConnect.getConnectionStatus().removeObserver(estadoConexionObserve);
         allweightsConnect.unRegisterService(requireActivity());
-        allweightsConnect.disconnect();
+        allweightsConnect.disconnect(requireActivity());
     }
 
     @Override

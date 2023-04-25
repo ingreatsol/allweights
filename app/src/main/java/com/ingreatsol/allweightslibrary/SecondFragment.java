@@ -88,6 +88,9 @@ public class SecondFragment extends Fragment {
                 Toast.makeText(requireActivity(), "Error al escribir la velocidad", Toast.LENGTH_LONG).show();
             }
         });
+
+        binding.buttonConectar.setOnClickListener(l -> connect());
+        binding.buttonDesconectar.setOnClickListener(l -> allweightsConnect.disconnect());
     }
 
     @Override

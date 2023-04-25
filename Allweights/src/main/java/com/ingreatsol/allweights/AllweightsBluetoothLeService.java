@@ -46,8 +46,6 @@ import java.util.List;
 public class AllweightsBluetoothLeService extends Service {
     private final static String TAG = AllweightsBluetoothLeService.class.getSimpleName();
 
-    private static AllweightsBluetoothLeService instance = null;
-
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
@@ -98,14 +96,6 @@ public class AllweightsBluetoothLeService extends Service {
             broadcastUpdate(characteristic);
         }
     };
-
-    public static AllweightsBluetoothLeService getInstance() {
-        return instance;
-    }
-
-    public static boolean isInstanceCreated() {
-        return instance != null;
-    }
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
@@ -159,18 +149,6 @@ public class AllweightsBluetoothLeService extends Service {
         public AllweightsBluetoothLeService getService() {
             return AllweightsBluetoothLeService.this;
         }
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        instance = this;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        instance = null;
     }
 
     @Override
@@ -231,6 +209,7 @@ public class AllweightsBluetoothLeService extends Service {
         if (address.equals(mBluetoothDeviceAddress)
                 && mBluetoothGatt != null) {
             Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
+
             if (mBluetoothGatt.connect()) {
                 broadcastUpdate(GattAttributes.ACTION_GATT_CONNECTING);
             }

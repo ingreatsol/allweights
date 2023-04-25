@@ -16,4 +16,6 @@
     <string name="calibrar_1">Calibrar 1</string>
     <string name="velocidad_2">Velocidad 2</string>
     <string name="muestreo">Muestreo</string>
+    <string name="conectar">Conectar</string>
+    <string name="desconectar">Desconectar</string>
 </resources>

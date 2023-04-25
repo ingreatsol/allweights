@@ -49,13 +49,31 @@
         app:layout_constraintTop_toBottomOf="@+id/text_comandos" />
 
     <Button
+        android:id="@+id/button_conectar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/conectar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/progressbar"
+        app:layout_constraintTop_toBottomOf="@+id/button_encerar" />
+
+    <Button
+        android:id="@+id/button_desconectar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/desconectar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/progressbar"
+        app:layout_constraintTop_toBottomOf="@+id/button_conectar" />
+
+    <Button
         android:id="@+id/button_calibrar1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/calibrar_1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/progressbar"
-        app:layout_constraintTop_toBottomOf="@+id/button_encerar" />
+        app:layout_constraintTop_toBottomOf="@+id/button_desconectar" />
 
     <Button
         android:id="@+id/button_velocidad2"

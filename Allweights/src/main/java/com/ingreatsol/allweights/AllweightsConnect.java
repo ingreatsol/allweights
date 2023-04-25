@@ -55,9 +55,12 @@ public class AllweightsConnect {
                 case GattAttributes.ACTION_GATT_DISCONNECTED:
                     connectionStatus.postValue(ConnectionStatus.DISCONNECTED);
                     break;
-                case GattAttributes.ACTION_GATT_SERVICES_DISCOVERED:
-                    displayGattServices(AllweightsBluetoothLeService.getInstance().getSupportedGattServices());
+                case GattAttributes.ACTION_GATT_SERVICES_DISCOVERED: {
+                    if (mBluetoothLeService != null) {
+                        displayGattServices(mBluetoothLeService.getSupportedGattServices());
+                    }
                     break;
+                }
                 case GattAttributes.ACTION_DATA_AVAILABLE:
                     procesardatos(intent.getStringExtra(GattAttributes.EXTRA_DATA));
                     break;
@@ -88,7 +91,7 @@ public class AllweightsConnect {
         connectionStatus = new MutableLiveData<>(ConnectionStatus.DISCONNECTED);
     }
 
-    public void setDevice(String deviceAddress, Integer deviceType){
+    public void setDevice(String deviceAddress, Integer deviceType) {
         this.deviceAddress = deviceAddress;
         this.deviceType = deviceType;
     }
@@ -101,8 +104,8 @@ public class AllweightsConnect {
         return connectionStatus;
     }
 
-    public void registerService(@NonNull FragmentActivity activity) {
-        activity.registerReceiver(mGattUpdateReceiver, GattAttributes.makeGattUpdateIntentFilter());
+    public void registerService(@NonNull Context context) {
+        context.registerReceiver(mGattUpdateReceiver, GattAttributes.makeGattUpdateIntentFilter());
     }
 
     @RequiresPermission(allOf = {
@@ -110,18 +113,22 @@ public class AllweightsConnect {
             "android.permission.BLUETOOTH_CONNECT"
     })
     public void connect(@NonNull FragmentActivity activity) throws AllweightsException {
-        if (deviceAddress == null || deviceType == null){
+        if (deviceAddress == null || deviceType == null) {
             throw new AllweightsException("Device not assigned");
+        }
+
+        if (ConnectionStatus.CONNECTED == connectionStatus.getValue()) {
+            return;
         }
 
         if (this.deviceType == 1) {
             connectBluetoothV1Task();
         } else {
-            if (!AllweightsBluetoothLeService.isInstanceCreated()) {
+            if (mBluetoothLeService == null){
                 Intent gattServiceIntent = new Intent(activity, AllweightsBluetoothLeService.class);
                 activity.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-            } else {
-                AllweightsBluetoothLeService.getInstance().connect(deviceAddress);
+            }else {
+                mBluetoothLeService.connect(deviceAddress);
             }
         }
     }
@@ -131,16 +138,16 @@ public class AllweightsConnect {
     }
 
     @SuppressLint("MissingPermission")
-    public void disconnect(){
-        if (ConnectionStatus.DISCONNECTED == connectionStatus.getValue()){
+    public void disconnect() {
+        if (ConnectionStatus.DISCONNECTED == connectionStatus.getValue()) {
             return;
         }
 
         if (deviceType == 1) {
             taskbluetooth.finish();
         } else {
-            if (AllweightsBluetoothLeService.isInstanceCreated()) {
-                AllweightsBluetoothLeService.getInstance().disconnect();
+            if (mBluetoothLeService != null){
+                mBluetoothLeService.disconnect();
             }
         }
     }
@@ -311,7 +318,6 @@ public class AllweightsConnect {
     }
 
     private boolean comprobarConexionBle() {
-        if (AllweightsBluetoothLeService.isInstanceCreated()) return mNotifyCharacteristic != null;
-        return false;
+        return mBluetoothLeService != null && mNotifyCharacteristic != null;
     }
 }

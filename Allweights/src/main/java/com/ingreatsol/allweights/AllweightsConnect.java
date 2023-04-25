@@ -18,7 +18,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
-import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.ingreatsol.allweights.exceptions.AllweightsException;
@@ -240,6 +239,9 @@ public class AllweightsConnect {
         taskbluetooth.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    /**
+     * @param strReceived data recived bluetooth conection
+     */
     private void procesardatos(String strReceived) {
         if (strReceived != null) {
             try {
@@ -262,7 +264,7 @@ public class AllweightsConnect {
                     data.setValue(bluetoothDataRecive);
                 }
             } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, "", e);
                 entrada = "";
             }
         }

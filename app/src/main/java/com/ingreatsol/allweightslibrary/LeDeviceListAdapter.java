@@ -38,12 +38,14 @@ public class LeDeviceListAdapter extends BaseAdapter {
         if (!mLeDevices.contains(device)) {
             mLeDevices.add(device);
         }
+        notifyDataSetChanged();
     }
 
     public void addDevices(@NonNull ArrayList<BluetoothDevice> devices) {
         for (BluetoothDevice device : devices) {
             addDevice(device);
         }
+        notifyDataSetChanged();
     }
 
     public BluetoothDevice getDevice(int position) {
@@ -52,6 +54,7 @@ public class LeDeviceListAdapter extends BaseAdapter {
 
     public void clear() {
         mLeDevices.clear();
+        notifyDataSetChanged();
     }
 
     @Override

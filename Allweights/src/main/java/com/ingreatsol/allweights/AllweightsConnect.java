@@ -18,18 +18,19 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
-import androidx.lifecycle.MutableLiveData;
 
 import com.ingreatsol.allweights.exceptions.AllweightsException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class AllweightsConnect {
     public static final String TAG = AllweightsConnect.class.getSimpleName();
 
-    private final MutableLiveData<AllweightsData> data;
-    private final MutableLiveData<ConnectionStatus> connectionStatus;
+    private ConnectionStatus mConnectionStatus = ConnectionStatus.DISCONNECTED;
+    private final ArrayList<OnAllweightsDataListener> mOnAllweightsDataListener;
+    private final ArrayList<OnConnectionStatusListener> mOnConectionStatusListener;
     private String deviceAddress;
     private Integer deviceType;
     private String entrada = "";
@@ -46,16 +47,16 @@ public class AllweightsConnect {
             final String action = intent.getAction();
             switch (action) {
                 case GattAttributes.ACTION_GATT_CONNECTED:
-                    connectionStatus.postValue(ConnectionStatus.CONNECTED);
+                    newConnectionStatus(ConnectionStatus.CONNECTED);
                     break;
                 case GattAttributes.ACTION_GATT_CONNECTING:
-                    connectionStatus.postValue(ConnectionStatus.CONNECTING);
+                    newConnectionStatus(ConnectionStatus.CONNECTING);
                     break;
                 case GattAttributes.ACTION_GATT_DISCONNECTED:
-                    connectionStatus.postValue(ConnectionStatus.DISCONNECTED);
+                    newConnectionStatus(ConnectionStatus.DISCONNECTED);
                     break;
                 case GattAttributes.ACTION_GATT_DISCONNECTING:
-                    connectionStatus.postValue(ConnectionStatus.DISCONNECTING);
+                    newConnectionStatus(ConnectionStatus.DISCONNECTING);
                     break;
                 case GattAttributes.ACTION_GATT_SERVICES_DISCOVERED: {
                     if (mBluetoothLeService != null) {
@@ -89,8 +90,8 @@ public class AllweightsConnect {
     };
 
     public AllweightsConnect() {
-        data = new MutableLiveData<>();
-        connectionStatus = new MutableLiveData<>(ConnectionStatus.DISCONNECTED);
+        mOnAllweightsDataListener = new ArrayList<>();
+        mOnConectionStatusListener = new ArrayList<>();
     }
 
     public void setDevice(String deviceAddress, Integer deviceType) {
@@ -98,16 +99,47 @@ public class AllweightsConnect {
         this.deviceType = deviceType;
     }
 
-    public MutableLiveData<AllweightsData> getData() {
-        return data;
+    private void newConnectionStatus(ConnectionStatus newConnectionStatus){
+        mConnectionStatus = newConnectionStatus;
+        for (OnConnectionStatusListener listener : mOnConectionStatusListener) {
+            listener.onConnectionStatus(mConnectionStatus);
+        }
     }
 
-    public MutableLiveData<ConnectionStatus> getConnectionStatus() {
-        return connectionStatus;
+    private ConnectionStatus getConnectionStatus(){
+        return mConnectionStatus;
+    }
+
+    public void addOnConnectionStatusListener(OnConnectionStatusListener listener) {
+        mOnConectionStatusListener.add(listener);
+    }
+
+    public void removeOnConnectionStatusListener(OnConnectionStatusListener listener) {
+        mOnConectionStatusListener.remove(listener);
+    }
+
+    public void clearOnConnectionStatusListener(){
+        mOnConectionStatusListener.clear();
+    }
+
+    public void addOnAllweightsDataListener(OnAllweightsDataListener listener) {
+        mOnAllweightsDataListener.add(listener);
+    }
+
+    public void removeOnAllweightsDataListener(OnAllweightsDataListener listener) {
+        mOnAllweightsDataListener.remove(listener);
+    }
+
+    public void clearOnAllweightsDataListener(){
+        mOnAllweightsDataListener.clear();
     }
 
     public void registerService(@NonNull Context context) {
         context.registerReceiver(mGattUpdateReceiver, GattAttributes.makeGattUpdateIntentFilter());
+    }
+
+    public void unRegisterService(@NonNull Context context) {
+        context.unregisterReceiver(mGattUpdateReceiver);
     }
 
     @RequiresPermission(allOf = {
@@ -131,13 +163,9 @@ public class AllweightsConnect {
         }
     }
 
-    public void unRegisterService(@NonNull Activity activity) {
-        activity.unregisterReceiver(mGattUpdateReceiver);
-    }
-
     @SuppressLint("MissingPermission")
     public void disconnect() {
-        if (ConnectionStatus.DISCONNECTED == connectionStatus.getValue()) {
+        if (ConnectionStatus.DISCONNECTED == mConnectionStatus) {
             return;
         }
 
@@ -201,13 +229,13 @@ public class AllweightsConnect {
             "android.permission.BLUETOOTH_CONNECT"
     })
     private void connectBluetoothV1Task() {
-        connectionStatus.postValue(ConnectionStatus.CONNECTING);
+        newConnectionStatus(ConnectionStatus.CONNECTING);
         if (listener == null) {
             listener = new BluetoothListener() {
 
                 @Override
                 public void onStatusConnection(ConnectionStatus status) {
-                    connectionStatus.postValue(status);
+                    newConnectionStatus(status);
                 }
 
                 @Override
@@ -219,7 +247,8 @@ public class AllweightsConnect {
                 public void initask(BluetoothSocket btSocket, BluetoothDevice btdevice) {
                     transmisionbluetooth = new TransmisionBluetooth(listener, btSocket);
                     transmisionbluetooth.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    connectionStatus.postValue(ConnectionStatus.CONNECTED);
+
+                    newConnectionStatus(ConnectionStatus.CONNECTED);
                 }
             };
         }
@@ -251,7 +280,10 @@ public class AllweightsConnect {
                         bluetoothDataRecive.bateryPercent = Float.parseFloat(datos[2]);
                     }
                     entrada = entrada.substring(cont[0].length() + 1);
-                    data.setValue(bluetoothDataRecive);
+
+                    for (OnAllweightsDataListener listener : mOnAllweightsDataListener) {
+                        listener.onAllweightsData(bluetoothDataRecive);
+                    }
                 }
             } catch (Exception e) {
                 Log.e(TAG, "", e);
@@ -320,5 +352,13 @@ public class AllweightsConnect {
 
     private boolean comprobarConexionBle() {
         return mBluetoothLeService != null && mNotifyCharacteristic != null;
+    }
+
+    public interface OnConnectionStatusListener {
+        void onConnectionStatus(ConnectionStatus status);
+    }
+
+    public interface OnAllweightsDataListener{
+        void onAllweightsData(AllweightsData data);
     }
 }

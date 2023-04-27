@@ -11,10 +11,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 
 import com.ingreatsol.allweights.AllweightsConnect;
-import com.ingreatsol.allweights.AllweightsData;
 import com.ingreatsol.allweights.AllweightsUtils;
 import com.ingreatsol.allweights.ConnectionStatus;
 import com.ingreatsol.allweightslibrary.databinding.FragmentSecondBinding;
@@ -24,29 +22,10 @@ public class SecondFragment extends Fragment {
     private FragmentSecondBinding binding;
     private AllweightsConnect allweightsConnect;
 
-    private final Observer<AllweightsData> dataObserver = new Observer<AllweightsData>() {
-        @SuppressLint("SetTextI18n")
+    AllweightsConnect.OnConnectionStatusListener onConnectionStatusListener = new AllweightsConnect.OnConnectionStatusListener() {
         @Override
-        public void onChanged(@NonNull AllweightsData allweightsData) {
-            binding.textviewPeso.setText(allweightsData.weight.toString());
-            if (Boolean.TRUE.equals(allweightsData.isEnergyConnected)) {
-                binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
-            } else {
-                if (allweightsData.bateryPercent != null && AllweightsUtils.RANGO_MINIMO_BATERIA < allweightsData.bateryPercent) {
-                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.RED));
-                } else {
-                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
-                }
-            }
-            if (allweightsData.bateryPercent != null) {
-                binding.progressbar.setProgress((int) (((allweightsData.bateryPercent - AllweightsUtils.RANGO_MINIMO_BATERIA) / AllweightsUtils.LIMITE_BATERIA) * 100));
-            }
-        }
-    };
-    private final Observer<ConnectionStatus> estadoConexionObserve = new Observer<ConnectionStatus>() {
-        @Override
-        public void onChanged(@NonNull ConnectionStatus estado) {
-            binding.textViewEstado.setText(estado.toString());
+        public void onConnectionStatus(@NonNull ConnectionStatus status) {
+            binding.textViewEstado.setText(status.toString());
         }
     };
 
@@ -90,23 +69,37 @@ public class SecondFragment extends Fragment {
 
         binding.buttonConectar.setOnClickListener(l -> connect());
         binding.buttonDesconectar.setOnClickListener(l -> allweightsConnect.disconnect());
+        allweightsConnect.addOnAllweightsDataListener(allweightsData -> {
+            binding.textviewPeso.setText(allweightsData.weight.toString());
+            if (Boolean.TRUE.equals(allweightsData.isEnergyConnected)) {
+                binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
+            } else {
+                if (allweightsData.bateryPercent != null && AllweightsUtils.RANGO_MINIMO_BATERIA < allweightsData.bateryPercent) {
+                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.RED));
+                } else {
+                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
+                }
+            }
+            if (allweightsData.bateryPercent != null) {
+                binding.progressbar.setProgress((int) (((allweightsData.bateryPercent - AllweightsUtils.RANGO_MINIMO_BATERIA) / AllweightsUtils.LIMITE_BATERIA) * 100));
+            }
+        });
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        allweightsConnect.getData().observe(requireActivity(), dataObserver);
-        allweightsConnect.getConnectionStatus().observe(requireActivity(), estadoConexionObserve);
         allweightsConnect.registerService(requireActivity());
+        allweightsConnect.addOnConnectionStatusListener(onConnectionStatusListener);
         connect();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        allweightsConnect.getData().removeObserver(dataObserver);
-        allweightsConnect.getConnectionStatus().removeObserver(estadoConexionObserve);
         allweightsConnect.unRegisterService(requireActivity());
+        allweightsConnect.removeOnConnectionStatusListener(onConnectionStatusListener);
         allweightsConnect.disconnect();
     }
 
@@ -118,11 +111,11 @@ public class SecondFragment extends Fragment {
     }
 
     @SuppressLint("MissingPermission")
-    public void connect(){
+    public void connect() {
         try {
             allweightsConnect.connect(requireActivity());
         } catch (Exception e) {
-            Toast.makeText(getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 

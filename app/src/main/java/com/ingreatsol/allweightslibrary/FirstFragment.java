@@ -1,7 +1,6 @@
 package com.ingreatsol.allweightslibrary;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
@@ -19,13 +18,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.Observer;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.ingreatsol.allweights.AllweightsUtils;
 import com.ingreatsol.allweights.AllweightsScan;
+import com.ingreatsol.allweights.AllweightsUtils;
 import com.ingreatsol.allweights.exceptions.AllweightsException;
 import com.ingreatsol.allweightslibrary.databinding.FragmentFirstBinding;
 
@@ -43,13 +40,6 @@ public class FirstFragment extends Fragment {
     private ActivityResultLauncher<Intent> enable_ble_loc_launcher;
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private Boolean permisoDenegado = false;
-    Observer<Boolean> estadoCOnexionObserve = new Observer<Boolean>() {
-        @Override
-        public void onChanged(Boolean estado) {
-            binding.progressBar.setVisibility(estado ? View.VISIBLE : View.GONE);
-            binding.button.setVisibility(estado ? View.GONE : View.VISIBLE);
-        }
-    };
 
     @SuppressLint("MissingPermission")
     @Override
@@ -67,12 +57,6 @@ public class FirstFragment extends Fragment {
 
         initLauchers();
 
-        bluetoothScan.getDevices().observe(requireActivity(), devices -> {
-            mLeDeviceListAdapter.clear();
-            mLeDeviceListAdapter.addDevices(devices);
-            mLeDeviceListAdapter.notifyDataSetChanged();
-        });
-
         return binding.getRoot();
     }
 
@@ -86,7 +70,7 @@ public class FirstFragment extends Fragment {
 
                 if (device == null) return;
 
-                bluetoothScan.cancelDiscovery();
+                bluetoothScan.stopScan();
 
                 Bundle b = new Bundle();
                 b.putString("deviceAddress", device.getAddress());
@@ -102,12 +86,19 @@ public class FirstFragment extends Fragment {
         binding.dispositivos.setAdapter(mLeDeviceListAdapter);
 
         binding.button.setOnClickListener(l -> scanear());
+        bluetoothScan.addOnAllweightsScanStatusListener(estado -> {
+            binding.progressBar.setVisibility(estado ? View.VISIBLE : View.GONE);
+            binding.button.setVisibility(estado ? View.GONE : View.VISIBLE);
+        });
+        bluetoothScan.addOnBluetoothDeviceListener(device -> {
+            mLeDeviceListAdapter.addDevice(device);
+        });
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        bluetoothScan.getScanState().observe(requireActivity(), estadoCOnexionObserve);
+        bluetoothScan.registerService(requireActivity());
         scanear();
     }
 
@@ -115,8 +106,8 @@ public class FirstFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        bluetoothScan.unRegisterService(requireActivity());
         bluetoothScan.stopScan();
-        bluetoothScan.getScanState().removeObserver(estadoCOnexionObserve);
     }
 
     @Override
@@ -171,7 +162,7 @@ public class FirstFragment extends Fragment {
     public void scanear() {
         Context context = getContext();
         assert context != null;
-        if (!AllweightsUtils.isBluethoothEnabled(context)) {
+        if (!AllweightsUtils.isBluethoothEnabled()) {
             new MaterialAlertDialogBuilder(context)
                     .setTitle("Bluetooth desactivado")
                     .setMessage("Se necesita activar el bluetooth para poder detectar dispositivos bluetooth. ¿Desea activarlo?")
@@ -221,6 +212,7 @@ public class FirstFragment extends Fragment {
             }
         } else {
             try {
+                mLeDeviceListAdapter.clear();
                 bluetoothScan.scan(requireActivity());
             } catch (AllweightsException e) {
                 Toast.makeText(requireActivity(), e.getMessage(), Toast.LENGTH_LONG).show();

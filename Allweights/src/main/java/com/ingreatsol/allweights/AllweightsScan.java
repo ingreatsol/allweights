@@ -1,68 +1,96 @@
 package com.ingreatsol.allweights;
 
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 
 import com.ingreatsol.allweights.exceptions.AllweightsException;
 
 import java.util.ArrayList;
 
 public class AllweightsScan {
-    private final MutableLiveData<Boolean> mScanning = new MutableLiveData<>(false);
-    private final MutableLiveData<ArrayList<BluetoothDevice>> devices = new MutableLiveData<>();
+    private Boolean mScanning = false;
+    private final ArrayList<OnAllweightsScanStatusListener> mOnAllweightsScanStatusListener;
+    private final ArrayList<OnBluetoothDeviceListener> mOnBluetoothDeviceListener;
     private BluetoothAdapter mBluetoothAdapter;
-    private BluetoothLeScanner bluetoothLeScanner;
     public static final long SCAN_PERIOD = 10000;
-    private final ScanCallback leScanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            super.onScanResult(callbackType, result);
-            ArrayList<BluetoothDevice> currentDevices = devices.getValue();
 
-            if (currentDevices == null) {
-                currentDevices = new ArrayList<>();
+    private final BroadcastReceiver mBluetoothDeviceUpdateReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            //may need to chain this to a recognizing function
+            if (BluetoothDevice.ACTION_FOUND.equals(action)){
+                // Get the BluetoothDevice object from the Intent
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                for (OnBluetoothDeviceListener listener :
+                        mOnBluetoothDeviceListener) {
+                    listener.onBluetoothDevice(device);
+                }
             }
-
-            currentDevices.add(result.getDevice());
-
-            devices.setValue(currentDevices);
         }
     };
 
-    public LiveData<ArrayList<BluetoothDevice>> getDevices() {
-        return devices;
+    public AllweightsScan() {
+        mOnAllweightsScanStatusListener = new ArrayList<>();
+        mOnBluetoothDeviceListener = new ArrayList<>();
     }
 
-    public LiveData<Boolean> getScanState() {
-        return mScanning;
-    }
-
-    @SuppressLint("MissingPermission")
-    public void stopScan() {
-        if (Boolean.TRUE.equals(mScanning.getValue())) {
-            mScanning.setValue(false);
-            bluetoothLeScanner.stopScan(leScanCallback);
+    private void newScanStatus(Boolean status) {
+        mScanning = status;
+        for (OnAllweightsScanStatusListener listener : mOnAllweightsScanStatusListener) {
+            listener.onAllweightsScanStatus(mScanning);
         }
     }
 
+    private Boolean getScanStatus() {
+        return mScanning;
+    }
+
+    public void addOnAllweightsScanStatusListener(OnAllweightsScanStatusListener listener) {
+        mOnAllweightsScanStatusListener.add(listener);
+    }
+
+    public void removeOnAllweightsScanStatusListener(OnAllweightsScanStatusListener listener) {
+        mOnAllweightsScanStatusListener.remove(listener);
+    }
+
+    public void clearOnConnectionStatusListener() {
+        mOnAllweightsScanStatusListener.clear();
+    }
+
+    public void addOnBluetoothDeviceListener(OnBluetoothDeviceListener listener) {
+        mOnBluetoothDeviceListener.add(listener);
+    }
+
+    public void removeOnBluetoothDeviceListener(OnBluetoothDeviceListener listener) {
+        mOnBluetoothDeviceListener.remove(listener);
+    }
+
+    public void clearOnBluetoothDeviceListener() {
+        mOnBluetoothDeviceListener.clear();
+    }
+
+    public void registerService(@NonNull Context context) {
+        context.registerReceiver(mBluetoothDeviceUpdateReceiver, GattAttributes.makeBluetoothUpdateIntentFilter());
+    }
+
+    public void unRegisterService(@NonNull Context context) {
+        context.unregisterReceiver(mBluetoothDeviceUpdateReceiver);
+    }
+
     @RequiresPermission("android.permission.BLUETOOTH_SCAN")
-    public void cancelDiscovery() {
-        if (mBluetoothAdapter.isDiscovering()) {
-            mBluetoothAdapter.cancelDiscovery();
+    public void stopScan() {
+        if (getmBluetoothAdapter().isDiscovering()) {
+            getmBluetoothAdapter().cancelDiscovery();
+            newScanStatus(false);
         }
     }
 
@@ -72,11 +100,11 @@ public class AllweightsScan {
             throw new AllweightsException("No soporta tecnologia ble");
         }
 
-        if (!isSuportBluetoothConnection(activity)) {
-            throw new AllweightsException("No soporta conexión bluetooth.");
+        if (!isSuportBluetoothConnection()) {
+            throw new AllweightsException("Este teléfono no tiene Bluetooth.");
         }
 
-        if (!AllweightsUtils.isBluethoothEnabled(activity)) {
+        if (!AllweightsUtils.isBluethoothEnabled()) {
             throw new AllweightsException("Bluetooth no habilitado");
         }
 
@@ -92,32 +120,30 @@ public class AllweightsScan {
             throw new AllweightsException("Faltan permisos de bluetooth");
         }
 
-        bluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-        if (Boolean.FALSE.equals(mScanning.getValue())) {
-            // Stops scanning after a predefined scan period.
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                mScanning.setValue(false);
-                bluetoothLeScanner.stopScan(leScanCallback);
-            }, SCAN_PERIOD);
+        stopScan();
 
-            mScanning.setValue(true);
-            devices.setValue(new ArrayList<>());
-            bluetoothLeScanner.startScan(leScanCallback);
-        } else {
-            mScanning.setValue(false);
-            bluetoothLeScanner.stopScan(leScanCallback);
-        }
+        new Handler(Looper.getMainLooper()).postDelayed(this::stopScan, SCAN_PERIOD);
+
+        mBluetoothAdapter.startDiscovery();
+        newScanStatus(true);
     }
 
-    public boolean isSuportBluetoothConnection(Context activity){
-        return getmBluetoothAdapter(activity) != null;
+    public boolean isSuportBluetoothConnection() {
+        return getmBluetoothAdapter() != null;
     }
 
-    private BluetoothAdapter getmBluetoothAdapter(Context activity) {
+    private BluetoothAdapter getmBluetoothAdapter() {
         if (mBluetoothAdapter == null) {
-            final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
-            mBluetoothAdapter = bluetoothManager.getAdapter();
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         }
         return mBluetoothAdapter;
+    }
+
+    public interface OnAllweightsScanStatusListener {
+        void onAllweightsScanStatus(Boolean status);
+    }
+
+    public interface OnBluetoothDeviceListener {
+        void onBluetoothDevice(BluetoothDevice device);
     }
 }

@@ -1,5 +1,6 @@
 package com.ingreatsol.allweights;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -106,13 +107,13 @@ public class AllweightsUtils {
         return gps_enabled && network_enabled;
     }
 
-    public static Boolean isBluethoothEnabled(@NonNull Context activity) {
-        BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+    public static Boolean isBluethoothEnabled() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         boolean bluetooth_enabled = false;
 
         try {
-            bluetooth_enabled = bluetoothManager.getAdapter().isEnabled();
+            bluetooth_enabled = bluetoothAdapter.isEnabled();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }

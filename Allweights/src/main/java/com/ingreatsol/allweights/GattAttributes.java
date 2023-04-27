@@ -16,6 +16,7 @@
 
 package com.ingreatsol.allweights;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.IntentFilter;
 
 import androidx.annotation.NonNull;
@@ -61,8 +62,16 @@ class GattAttributes {
         intentFilter.addAction(ACTION_GATT_CONNECTED);
         intentFilter.addAction(ACTION_GATT_CONNECTING);
         intentFilter.addAction(ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(ACTION_GATT_DISCONNECTING);
         intentFilter.addAction(ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(ACTION_DATA_AVAILABLE);
+        return intentFilter;
+    }
+
+    @NonNull
+    public static IntentFilter makeBluetoothUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
         return intentFilter;
     }
 }

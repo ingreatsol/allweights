@@ -106,7 +106,7 @@ public class AllweightsConnect {
         }
     }
 
-    private ConnectionStatus getConnectionStatus(){
+    public ConnectionStatus getConnectionStatus(){
         return mConnectionStatus;
     }
 

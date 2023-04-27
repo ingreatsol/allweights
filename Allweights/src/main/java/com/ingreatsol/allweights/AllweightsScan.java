@@ -1,5 +1,6 @@
 package com.ingreatsol.allweights;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -50,7 +51,7 @@ public class AllweightsScan {
         }
     }
 
-    private Boolean getScanStatus() {
+    public Boolean getScanStatus() {
         return mScanning;
     }
 
@@ -86,9 +87,9 @@ public class AllweightsScan {
         context.unregisterReceiver(mBluetoothDeviceUpdateReceiver);
     }
 
-    @RequiresPermission("android.permission.BLUETOOTH_SCAN")
+    @SuppressLint("MissingPermission")
     public void stopScan() {
-        if (getmBluetoothAdapter().isDiscovering()) {
+        if (mScanning) {
             getmBluetoothAdapter().cancelDiscovery();
             newScanStatus(false);
         }

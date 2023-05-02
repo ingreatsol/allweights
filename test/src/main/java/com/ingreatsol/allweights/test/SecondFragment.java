@@ -1,4 +1,4 @@
-package com.ingreatsol.allweightslibrary;
+package com.ingreatsol.allweights.test;
 
 import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;
@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
 import com.ingreatsol.allweights.AllweightsConnect;
 import com.ingreatsol.allweights.AllweightsUtils;
 import com.ingreatsol.allweights.ConnectionStatus;
-import com.ingreatsol.allweightslibrary.databinding.FragmentSecondBinding;
+import com.ingreatsol.allweights.test.databinding.FragmentSecondBinding;
 
 public class SecondFragment extends Fragment {
 

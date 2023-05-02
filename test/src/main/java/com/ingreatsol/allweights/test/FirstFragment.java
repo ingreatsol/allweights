@@ -1,4 +1,4 @@
-package com.ingreatsol.allweightslibrary;
+package com.ingreatsol.allweights.test;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -24,7 +24,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.ingreatsol.allweights.AllweightsScan;
 import com.ingreatsol.allweights.AllweightsUtils;
 import com.ingreatsol.allweights.exceptions.AllweightsException;
-import com.ingreatsol.allweightslibrary.databinding.FragmentFirstBinding;
+import com.ingreatsol.allweights.test.databinding.FragmentFirstBinding;
 
 import java.util.ArrayList;
 import java.util.Map;

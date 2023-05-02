@@ -1,4 +1,4 @@
-package com.ingreatsol.allweightslibrary;
+package com.ingreatsol.allweights.test;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

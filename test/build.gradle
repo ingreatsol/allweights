@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.ingreatsol.allweightslibrary'
+    namespace 'com.ingreatsol.allweights.test'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.ingreatsol.allweightslibrary"
+        applicationId "com.ingreatsol.allweights.test"
         minSdk 24
         targetSdk 33
         versionCode 1

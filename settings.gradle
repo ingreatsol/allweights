@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "Allweights library"
-include ':app'
+include ':test'
 include ':Allweights'

@@ -1,4 +1,4 @@
-package com.ingreatsol.allweightslibrary;
+package com.ingreatsol.allweights.test;
 
 import android.os.Bundle;
 import android.view.Menu;
@@ -11,7 +11,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.ingreatsol.allweightslibrary.databinding.ActivityMainBinding;
+import com.ingreatsol.allweights.test.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
 

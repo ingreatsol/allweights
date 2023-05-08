@@ -24,7 +24,7 @@ class TransmisionBluetooth extends AsyncTask<String, String, Void> {
     protected Void doInBackground(String... strings) {
         while (this.btSoket.isConnected()) {
             try {
-                Thread.sleep(10);
+                Thread.sleep(10, 0);
                 bytes = this.btSoket.getInputStream().read(buffer);
                 String strReceived = new String(buffer, 0, bytes);
                 if (strReceived.length() > 30) {

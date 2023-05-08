@@ -64,8 +64,17 @@ public class AllweightsUtils {
             return false;
         }
 
-        return Arrays.stream(Permission.LOCATION)
-                .anyMatch(per -> checkPermissionsIfNecessary(context, per));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return Arrays.stream(Permission.LOCATION)
+                    .anyMatch(per -> checkPermissionsIfNecessary(context, per));
+        } else {
+            for (String permission : Permission.LOCATION) {
+                if (checkPermissionsIfNecessary(context, permission)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     public static boolean isMissingPermisionBluetooth(Context context) {
@@ -73,8 +82,17 @@ public class AllweightsUtils {
             return false;
         }
 
-        return Arrays.stream(Permission.BLUETOOTH)
-                .anyMatch(per -> checkPermissionsIfNecessary(context, per));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return Arrays.stream(Permission.BLUETOOTH)
+                    .anyMatch(per -> checkPermissionsIfNecessary(context, per));
+        } else {
+            for (String permission : Permission.BLUETOOTH) {
+                if (checkPermissionsIfNecessary(context, permission)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     @NonNull
@@ -118,5 +136,10 @@ public class AllweightsUtils {
             Log.e(TAG, e.getMessage());
         }
         return bluetooth_enabled;
+    }
+
+    public static boolean isExistBluetoothInSystem(@NonNull Context context){
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
+                || context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH);
     }
 }

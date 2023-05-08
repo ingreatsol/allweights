@@ -50,10 +50,7 @@ public class FirstFragment extends Fragment {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
         bluetoothScan = new AllweightsScan();
 
-        mLeDeviceListAdapter = new LeDeviceListAdapter(requireActivity(),
-                R.layout.listitem_device,
-                R.id.device_address,
-                R.id.device_name);
+        mLeDeviceListAdapter = new LeDeviceListAdapter();
 
         initLauchers();
 
@@ -126,7 +123,17 @@ public class FirstFragment extends Fragment {
                 });
 
         multiplePermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-            boolean resultStatus = result.entrySet().stream().allMatch(Map.Entry::getValue);
+            boolean resultStatus = false;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                resultStatus = result.entrySet().stream().allMatch(Map.Entry::getValue);
+            } else {
+                for (Map.Entry<String, Boolean> status : result.entrySet()) {
+                    resultStatus = status.getValue();
+                    if (!resultStatus) {
+                        break;
+                    }
+                }
+            }
             if (!resultStatus) {
                 permisoDenegado = true;
             }
@@ -162,7 +169,16 @@ public class FirstFragment extends Fragment {
     public void scanear() {
         Context context = getContext();
         assert context != null;
-        if (!AllweightsUtils.isBluethoothEnabled()) {
+        if (!AllweightsUtils.isExistBluetoothInSystem(context)){
+            new MaterialAlertDialogBuilder(context)
+                    .setTitle("Bluetooth no existente")
+                    .setMessage("No existe tecnologia bluetooth en este telefono para poder realizar busquedas bluetooth")
+                    .setPositiveButton("Aceptar", (dialogAcept, which) -> {
+                        dialogAcept.dismiss();
+                    })
+                    .show();
+        }
+       else if (!AllweightsUtils.isBluethoothEnabled()) {
             new MaterialAlertDialogBuilder(context)
                     .setTitle("Bluetooth desactivado")
                     .setMessage("Se necesita activar el bluetooth para poder detectar dispositivos bluetooth. ¿Desea activarlo?")

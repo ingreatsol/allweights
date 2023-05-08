@@ -3,35 +3,24 @@ package com.ingreatsol.allweights.test;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.TextView;
 
-import androidx.annotation.IdRes;
-import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
+
+import com.ingreatsol.allweights.test.databinding.ListitemDeviceBinding;
 
 import java.util.ArrayList;
 
 public class LeDeviceListAdapter extends BaseAdapter {
     private final ArrayList<BluetoothDevice> mLeDevices;
     protected Activity activity;
-    private final @LayoutRes int mResource;
-    private final @IdRes int device_address;
-    private final @IdRes int device_name;
 
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    public LeDeviceListAdapter(Activity activity, @LayoutRes int layout,
-                               @IdRes int device_address, @IdRes int device_name) {
-        this.activity = activity;
+    public LeDeviceListAdapter() {
         this.mLeDevices = new ArrayList<>();
-        this.mResource = layout;
-        this.device_address = device_address;
-        this.device_name = device_name;
     }
 
     public void addDevice(BluetoothDevice device) {
@@ -78,30 +67,32 @@ public class LeDeviceListAdapter extends BaseAdapter {
     public View getView(int position, View view, ViewGroup parent) {
         ViewHolder viewHolder;
         if (view == null) {
-            LayoutInflater mInflator = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = mInflator.inflate(mResource, null);
             viewHolder = new ViewHolder();
-            viewHolder.deviceAddress = view.findViewById(device_address);
-            viewHolder.deviceName = view.findViewById(device_name);
+
+            viewHolder.binding = ListitemDeviceBinding
+                    .inflate(LayoutInflater.from(parent.getContext()),parent,false);
+
+            view = viewHolder.binding.getRoot();
+
             view.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) view.getTag();
         }
 
         BluetoothDevice device = mLeDevices.get(position);
+
         final String deviceName = device.getName();
         if (deviceName != null && deviceName.length() > 0)
-            viewHolder.deviceName.setText(deviceName);
+            viewHolder.binding.deviceName.setText(deviceName);
         else
-            viewHolder.deviceName.setText("Unknown service");
-        viewHolder.deviceAddress.setText(device.getAddress());
+            viewHolder.binding.deviceName.setText(R.string.unknown_service);
+        viewHolder.binding.deviceAddress.setText(device.getAddress());
 
         return view;
     }
 
     static class ViewHolder {
-        TextView deviceName;
-        TextView deviceAddress;
+        ListitemDeviceBinding binding;
     }
 
 }

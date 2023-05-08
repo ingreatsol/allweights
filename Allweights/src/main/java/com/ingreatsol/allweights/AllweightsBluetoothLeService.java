@@ -38,6 +38,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
@@ -269,11 +270,7 @@ public class AllweightsBluetoothLeService extends Service {
             action = GattAttributes.ACTION_GATT_DISCONNECTING;
         }
 
-        if (action == null) {
-            broadcastUpdate(GattAttributes.ACTION_GATT_DISCONNECTED);
-        } else {
-            broadcastUpdate(action);
-        }
+        broadcastUpdate(Objects.requireNonNullElse(action, GattAttributes.ACTION_GATT_DISCONNECTED));
     }
 
     /**

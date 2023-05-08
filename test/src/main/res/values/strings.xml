@@ -18,4 +18,6 @@
     <string name="muestreo">Muestreo</string>
     <string name="conectar">Conectar</string>
     <string name="desconectar">Desconectar</string>
+    <string name="escanear">Escanear</string>
+    <string name="unknown_service">Unknown service</string>
 </resources>

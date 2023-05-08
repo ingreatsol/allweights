@@ -25,7 +25,7 @@ public class AllweightsScan {
     public static final long SCAN_PERIOD = 10000;
 
     private final BroadcastReceiver mBluetoothDeviceUpdateReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
+        public void onReceive(Context context, @NonNull Intent intent) {
             String action = intent.getAction();
             //may need to chain this to a recognizing function
             if (BluetoothDevice.ACTION_FOUND.equals(action)){
@@ -96,8 +96,8 @@ public class AllweightsScan {
     }
 
     @RequiresPermission("android.permission.BLUETOOTH_SCAN")
-    public void scan(@NonNull Context activity) throws AllweightsException {
-        if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+    public void scan(@NonNull Context context) throws AllweightsException {
+        if (!AllweightsUtils.isExistBluetoothInSystem(context)) {
             throw new AllweightsException("No soporta tecnologia ble");
         }
 
@@ -109,15 +109,15 @@ public class AllweightsScan {
             throw new AllweightsException("Bluetooth no habilitado");
         }
 
-        if (!AllweightsUtils.isLocationEnabled(activity)) {
+        if (!AllweightsUtils.isLocationEnabled(context)) {
             throw new AllweightsException("Ubicación no habilitada");
         }
 
-        if (AllweightsUtils.isMissingPermisionLocation(activity)) {
+        if (AllweightsUtils.isMissingPermisionLocation(context)) {
             throw new AllweightsException("Faltan permisos de ubicacion");
         }
 
-        if (AllweightsUtils.isMissingPermisionBluetooth(activity)) {
+        if (AllweightsUtils.isMissingPermisionBluetooth(context)) {
             throw new AllweightsException("Faltan permisos de bluetooth");
         }
 
@@ -128,6 +128,8 @@ public class AllweightsScan {
         mBluetoothAdapter.startDiscovery();
         newScanStatus(true);
     }
+
+
 
     public boolean isSuportBluetoothConnection() {
         return getmBluetoothAdapter() != null;

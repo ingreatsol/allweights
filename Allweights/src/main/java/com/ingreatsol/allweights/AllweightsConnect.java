@@ -99,14 +99,14 @@ public class AllweightsConnect {
         this.deviceType = deviceType;
     }
 
-    private void newConnectionStatus(ConnectionStatus newConnectionStatus){
+    private void newConnectionStatus(ConnectionStatus newConnectionStatus) {
         mConnectionStatus = newConnectionStatus;
         for (OnConnectionStatusListener listener : mOnConectionStatusListener) {
             listener.onConnectionStatus(mConnectionStatus);
         }
     }
 
-    public ConnectionStatus getConnectionStatus(){
+    public ConnectionStatus getConnectionStatus() {
         return mConnectionStatus;
     }
 
@@ -118,7 +118,7 @@ public class AllweightsConnect {
         mOnConectionStatusListener.remove(listener);
     }
 
-    public void clearOnConnectionStatusListener(){
+    public void clearOnConnectionStatusListener() {
         mOnConectionStatusListener.clear();
     }
 
@@ -130,7 +130,7 @@ public class AllweightsConnect {
         mOnAllweightsDataListener.remove(listener);
     }
 
-    public void clearOnAllweightsDataListener(){
+    public void clearOnAllweightsDataListener() {
         mOnAllweightsDataListener.clear();
     }
 
@@ -358,7 +358,7 @@ public class AllweightsConnect {
         void onConnectionStatus(ConnectionStatus status);
     }
 
-    public interface OnAllweightsDataListener{
+    public interface OnAllweightsDataListener {
         void onAllweightsData(AllweightsData data);
     }
 }

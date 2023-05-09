@@ -169,7 +169,7 @@ public class FirstFragment extends Fragment {
     public void scanear() {
         Context context = getContext();
         assert context != null;
-        if (!AllweightsUtils.isExistBluetoothInSystem(context)){
+        if (AllweightsUtils.isNotExistBluetoothInSystem(context)) {
             new MaterialAlertDialogBuilder(context)
                     .setTitle("Bluetooth no existente")
                     .setMessage("No existe tecnologia bluetooth en este telefono para poder realizar busquedas bluetooth")
@@ -177,8 +177,7 @@ public class FirstFragment extends Fragment {
                         dialogAcept.dismiss();
                     })
                     .show();
-        }
-       else if (!AllweightsUtils.isBluethoothEnabled()) {
+        } else if (!AllweightsUtils.isBluethoothEnabled()) {
             new MaterialAlertDialogBuilder(context)
                     .setTitle("Bluetooth desactivado")
                     .setMessage("Se necesita activar el bluetooth para poder detectar dispositivos bluetooth. ¿Desea activarlo?")

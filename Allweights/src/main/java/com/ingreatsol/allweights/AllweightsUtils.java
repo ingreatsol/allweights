@@ -1,7 +1,6 @@
 package com.ingreatsol.allweights;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
@@ -138,8 +137,8 @@ public class AllweightsUtils {
         return bluetooth_enabled;
     }
 
-    public static boolean isExistBluetoothInSystem(@NonNull Context context){
-        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
-                || context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH);
+    public static boolean isNotExistBluetoothInSystem(@NonNull Context context) {
+        return !context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
+                && !context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH);
     }
 }

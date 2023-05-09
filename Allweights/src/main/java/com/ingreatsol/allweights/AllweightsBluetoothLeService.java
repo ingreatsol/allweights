@@ -240,13 +240,12 @@ public class AllweightsBluetoothLeService extends Service {
 
     @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void forceConnect() {
-        if(mBluetoothDeviceAddress != null) {
-            Log.d(TAG, "Trying to force connection: "+mBluetoothDeviceAddress);
+        if (mBluetoothDeviceAddress != null) {
+            Log.d(TAG, "Trying to force connection: " + mBluetoothDeviceAddress);
             mBluetoothGatt.disconnect();
             final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mBluetoothDeviceAddress);
             mBluetoothGatt = device.connectGatt(this, true, mGattCallback);
-        }
-        else {
+        } else {
             Log.d(TAG, "Force connect called without previous connection");
         }
     }
@@ -339,11 +338,13 @@ public class AllweightsBluetoothLeService extends Service {
                 || GattAttributes.HEART_RATE_MEASUREMENT2.equals(characteristic.getUuid())) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(GattAttributes.CLIENT_CHARACTERISTIC_CONFIG);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                mBluetoothGatt.writeDescriptor(descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            } else {
-                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                mBluetoothGatt.writeDescriptor(descriptor);
+            if (descriptor != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    mBluetoothGatt.writeDescriptor(descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                } else {
+                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    mBluetoothGatt.writeDescriptor(descriptor);
+                }
             }
         }
     }

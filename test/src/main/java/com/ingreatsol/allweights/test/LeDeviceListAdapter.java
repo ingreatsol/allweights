@@ -1,7 +1,6 @@
 package com.ingreatsol.allweights.test;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresPermission;
 
 import com.ingreatsol.allweights.test.databinding.ListitemDeviceBinding;
 
@@ -17,7 +15,6 @@ import java.util.ArrayList;
 
 public class LeDeviceListAdapter extends BaseAdapter {
     private final ArrayList<BluetoothDevice> mLeDevices;
-    protected Activity activity;
 
     public LeDeviceListAdapter() {
         this.mLeDevices = new ArrayList<>();
@@ -61,8 +58,6 @@ public class LeDeviceListAdapter extends BaseAdapter {
         return position;
     }
 
-    @SuppressLint("SetTextI18n")
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     @Override
     public View getView(int position, View view, ViewGroup parent) {
         ViewHolder viewHolder;
@@ -70,7 +65,7 @@ public class LeDeviceListAdapter extends BaseAdapter {
             viewHolder = new ViewHolder();
 
             viewHolder.binding = ListitemDeviceBinding
-                    .inflate(LayoutInflater.from(parent.getContext()),parent,false);
+                    .inflate(LayoutInflater.from(parent.getContext()), parent, false);
 
             view = viewHolder.binding.getRoot();
 
@@ -81,7 +76,7 @@ public class LeDeviceListAdapter extends BaseAdapter {
 
         BluetoothDevice device = mLeDevices.get(position);
 
-        final String deviceName = device.getName();
+        @SuppressLint("MissingPermission") final String deviceName = device.getName();
         if (deviceName != null && deviceName.length() > 0)
             viewHolder.binding.deviceName.setText(deviceName);
         else

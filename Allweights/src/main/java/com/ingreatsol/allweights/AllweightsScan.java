@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -28,7 +27,7 @@ public class AllweightsScan {
         public void onReceive(Context context, @NonNull Intent intent) {
             String action = intent.getAction();
             //may need to chain this to a recognizing function
-            if (BluetoothDevice.ACTION_FOUND.equals(action)){
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 for (OnBluetoothDeviceListener listener :
@@ -97,7 +96,7 @@ public class AllweightsScan {
 
     @RequiresPermission("android.permission.BLUETOOTH_SCAN")
     public void scan(@NonNull Context context) throws AllweightsException {
-        if (!AllweightsUtils.isExistBluetoothInSystem(context)) {
+        if (AllweightsUtils.isNotExistBluetoothInSystem(context)) {
             throw new AllweightsException("No soporta tecnologia ble");
         }
 
@@ -128,7 +127,6 @@ public class AllweightsScan {
         mBluetoothAdapter.startDiscovery();
         newScanStatus(true);
     }
-
 
 
     public boolean isSuportBluetoothConnection() {

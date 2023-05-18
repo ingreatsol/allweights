@@ -42,9 +42,8 @@ public class SecondFragment extends Fragment {
         String deviceAddres = getArguments().getString("deviceAddress");
         Integer deviceType = getArguments().getInt("deviceType");
 
-        allweightsConnect = new AllweightsConnect();
+        allweightsConnect = new AllweightsConnect(requireActivity());
         allweightsConnect.setDevice(deviceAddres, deviceType);
-
         return binding.getRoot();
     }
 
@@ -90,7 +89,6 @@ public class SecondFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        allweightsConnect.registerService(requireActivity());
         allweightsConnect.addOnConnectionStatusListener(onConnectionStatusListener);
         connect();
     }
@@ -98,22 +96,22 @@ public class SecondFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        allweightsConnect.unRegisterService(requireActivity());
         allweightsConnect.removeOnConnectionStatusListener(onConnectionStatusListener);
         allweightsConnect.disconnect();
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        allweightsConnect.destroyService(requireActivity());
+        allweightsConnect.destroyService();
     }
 
     @SuppressLint("MissingPermission")
     public void connect() {
         try {
-            allweightsConnect.connect(requireActivity());
+            allweightsConnect.connect();
         } catch (Exception e) {
             Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }

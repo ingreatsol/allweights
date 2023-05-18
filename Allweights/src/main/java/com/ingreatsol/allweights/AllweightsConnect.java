@@ -46,7 +46,7 @@ public class AllweightsConnect {
     TransmisionBluetooth transmisionbluetooth;
     private final Context context;
     private final BluetoothAdapter mBluetoothAdapter;
-    private Handler mMainHandler;
+    private final Handler mMainHandler;
     protected final Object channelsLock = new Object();
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
@@ -466,18 +466,6 @@ public class AllweightsConnect {
         } else {
             caractersitic.setValue(action.getBytes());
             return mBluetoothGatt.writeCharacteristic(caractersitic);
-        }
-    }
-
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    private void forceConnect() {
-        if (mBluetoothDeviceAddress != null) {
-            Log.d(TAG, "Trying to force connection: " + mBluetoothDeviceAddress);
-            mBluetoothGatt.disconnect();
-            final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mBluetoothDeviceAddress);
-            mBluetoothGatt = device.connectGatt(context, false, mGattCallback);
-        } else {
-            Log.d(TAG, "Force connect called without previous connection");
         }
     }
 

@@ -27,9 +27,13 @@ import java.util.UUID;
 class GattAttributes {
     private static final HashMap<UUID, String> attributes = new HashMap<>();
     public static UUID HEART_RATE_MEASUREMENT = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
-    public static UUID HEART_RATE_MEASUREMENT2 = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
+    public static UUID HEART_RATE_SERVICE = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb");
+    public static UUID SHOW_DATA = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
     public static UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-    public static UUID INFORMACION_DISPOSITIVO = UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb");
+    public static UUID DEVICE_INFORMATION_SERVICE = UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb");
+    public static UUID MANUFACTURER_NAME = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb");
+    public static UUID DEVICE_DATA = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
+    public static UUID DEVICE_NAME = UUID.fromString("00002a00-0000-1000-8000-00805f9b34fb");
 
     public final static String ACTION_GATT_CONNECTED = "com.ingreatsol.bluetooth.le.ACTION_GATT_CONNECTED";
     public final static String ACTION_GATT_CONNECTING = "com.ingreatsol.bluetooth.le.ACTION_GATT_CONNECTING";
@@ -41,14 +45,14 @@ class GattAttributes {
 
     static {
         // Sample Services.
-        attributes.put(UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb"), "Heart Rate Service");
-        attributes.put(INFORMACION_DISPOSITIVO, "Device Information Service");
+        attributes.put(HEART_RATE_SERVICE, "Heart Rate Service");
+        attributes.put(DEVICE_INFORMATION_SERVICE, "Device Information Service");
         // Sample Characteristics.
         attributes.put(HEART_RATE_MEASUREMENT, "Heart Rate Measurement");
-        attributes.put(UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb"), "Manufacturer Name String");
-        attributes.put(UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb"), "DATOS DEL DISPOSTIVO");
-        attributes.put(HEART_RATE_MEASUREMENT2, "MOSTAR DATOS");
-        attributes.put(UUID.fromString("00002a00-0000-1000-8000-00805f9b34fb"), "NOMBRE DEL DISPOSTIVO");
+        attributes.put(MANUFACTURER_NAME, "Manufacturer Name String");
+        attributes.put(DEVICE_DATA, "Device Data");
+        attributes.put(SHOW_DATA, "Show data");
+        attributes.put(DEVICE_NAME, "Device Name");
     }
 
     public static String lookup(UUID uuid, String defaultName) {

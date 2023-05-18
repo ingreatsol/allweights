@@ -20,6 +20,7 @@ class TransmisionBluetooth extends AsyncTask<String, String, Void> {
         this.btSoket = btsoket;
     }
 
+    @SuppressWarnings("BusyWait")
     @Override
     protected Void doInBackground(String... strings) {
         while (this.btSoket.isConnected()) {

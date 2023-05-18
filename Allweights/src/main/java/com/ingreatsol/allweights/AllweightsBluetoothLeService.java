@@ -335,7 +335,7 @@ public class AllweightsBluetoothLeService extends Service {
 
         // This is specific to Heart Rate Measurement.
         if (GattAttributes.HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())
-                || GattAttributes.HEART_RATE_MEASUREMENT2.equals(characteristic.getUuid())) {
+                || GattAttributes.SHOW_DATA.equals(characteristic.getUuid())) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(GattAttributes.CLIENT_CHARACTERISTIC_CONFIG);
 
             if (descriptor != null) {

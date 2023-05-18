@@ -297,7 +297,7 @@ public class AllweightsConnect {
         if (gattServices == null) return;
         for (BluetoothGattService gattService : gattServices) {
             for (BluetoothGattCharacteristic gattCharacteristic : gattService.getCharacteristics()) {
-                if (gattCharacteristic.getUuid().equals(GattAttributes.HEART_RATE_MEASUREMENT2)) {
+                if (gattCharacteristic.getUuid().equals(GattAttributes.SHOW_DATA)) {
                     activarCaracteristica(gattCharacteristic);
                     return;
                 }

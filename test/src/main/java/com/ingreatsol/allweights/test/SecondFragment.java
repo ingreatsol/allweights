@@ -1,5 +1,8 @@
 package com.ingreatsol.allweights.test;
 
+import static com.ingreatsol.allweights.AllweightsUtils.LIMITE_BATERIA;
+import static com.ingreatsol.allweights.AllweightsUtils.RANGO_MINIMO_BATERIA;
+
 import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -13,7 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.ingreatsol.allweights.AllweightsConnect;
-import com.ingreatsol.allweights.AllweightsUtils;
+import com.ingreatsol.allweights.AllweightsData;
 import com.ingreatsol.allweights.ConnectionStatus;
 import com.ingreatsol.allweights.test.databinding.FragmentSecondBinding;
 
@@ -22,9 +25,27 @@ public class SecondFragment extends Fragment {
     private FragmentSecondBinding binding;
     private AllweightsConnect allweightsConnect;
 
-    AllweightsConnect.OnConnectionStatusListener onConnectionStatusListener = new AllweightsConnect.OnConnectionStatusListener() {
+    AllweightsConnect.OnAllweightsConnectCallback onAllweightsConnectCallback = new AllweightsConnect.OnAllweightsConnectCallback() {
+        @SuppressLint("SetTextI18n")
         @Override
-        public void onConnectionStatus(@NonNull ConnectionStatus status) {
+        public void onAllweightsDataChange(@NonNull AllweightsData data) {
+            binding.textviewPeso.setText(data.weight.toString());
+            if (Boolean.TRUE.equals(data.isEnergyConnected)) {
+                binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
+            } else {
+                if (data.bateryPercent != null && RANGO_MINIMO_BATERIA < data.bateryPercent) {
+                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.RED));
+                } else {
+                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
+                }
+            }
+            if (data.bateryPercent != null) {
+                binding.progressbar.setProgress((int) (((data.bateryPercent - RANGO_MINIMO_BATERIA) / LIMITE_BATERIA) * 100));
+            }
+        }
+
+        @Override
+        public void onConnectionStatusChange(@NonNull ConnectionStatus status) {
             binding.textViewEstado.setText(status.toString());
         }
     };
@@ -68,35 +89,19 @@ public class SecondFragment extends Fragment {
 
         binding.buttonConectar.setOnClickListener(l -> connect());
         binding.buttonDesconectar.setOnClickListener(l -> allweightsConnect.disconnect());
-        allweightsConnect.addOnAllweightsDataListener(allweightsData -> {
-            binding.textviewPeso.setText(allweightsData.weight.toString());
-            if (Boolean.TRUE.equals(allweightsData.isEnergyConnected)) {
-                binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
-            } else {
-                if (allweightsData.bateryPercent != null && AllweightsUtils.RANGO_MINIMO_BATERIA < allweightsData.bateryPercent) {
-                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.RED));
-                } else {
-                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
-                }
-            }
-            if (allweightsData.bateryPercent != null) {
-                binding.progressbar.setProgress((int) (((allweightsData.bateryPercent - AllweightsUtils.RANGO_MINIMO_BATERIA) / AllweightsUtils.LIMITE_BATERIA) * 100));
-            }
-        });
-
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        allweightsConnect.addOnConnectionStatusListener(onConnectionStatusListener);
+        allweightsConnect.addOnAllweightsConnectCallback(onAllweightsConnectCallback);
         connect();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        allweightsConnect.removeOnConnectionStatusListener(onConnectionStatusListener);
+        allweightsConnect.removeOnAllweightsConnectCallback(onAllweightsConnectCallback);
         allweightsConnect.disconnect();
     }
 

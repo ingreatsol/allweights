@@ -20,25 +20,31 @@ public class LeDeviceListAdapter extends BaseAdapter {
         this.mLeDevices = new ArrayList<>();
     }
 
-    public void addDevice(BluetoothDevice device) {
+    public synchronized void addDevice(BluetoothDevice device) {
         if (!mLeDevices.contains(device)) {
             mLeDevices.add(device);
         }
         notifyDataSetChanged();
     }
 
-    public void addDevices(@NonNull ArrayList<BluetoothDevice> devices) {
+    public synchronized void addDevices(@NonNull ArrayList<BluetoothDevice> devices) {
         for (BluetoothDevice device : devices) {
             addDevice(device);
         }
         notifyDataSetChanged();
     }
 
+    public synchronized void remove(BluetoothDevice peer) {
+        if (mLeDevices.remove(peer)) {
+            notifyDataSetChanged();
+        }
+    }
+
     public BluetoothDevice getDevice(int position) {
         return mLeDevices.get(position);
     }
 
-    public void clear() {
+    public synchronized void clear() {
         mLeDevices.clear();
         notifyDataSetChanged();
     }

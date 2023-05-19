@@ -48,7 +48,7 @@ public class FirstFragment extends Fragment {
             Bundle savedInstanceState
     ) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
-        bluetoothScan = new AllweightsScan();
+        bluetoothScan = new AllweightsScan(requireActivity());
 
         mLeDeviceListAdapter = new LeDeviceListAdapter();
 
@@ -83,19 +83,28 @@ public class FirstFragment extends Fragment {
         binding.dispositivos.setAdapter(mLeDeviceListAdapter);
 
         binding.button.setOnClickListener(l -> scanear());
-        bluetoothScan.addOnAllweightsScanStatusListener(estado -> {
-            binding.progressBar.setVisibility(estado ? View.VISIBLE : View.GONE);
-            binding.button.setVisibility(estado ? View.GONE : View.VISIBLE);
-        });
-        bluetoothScan.addOnBluetoothDeviceListener(device -> {
-            mLeDeviceListAdapter.addDevice(device);
+        bluetoothScan.addOnAllweightsScanCallback(new AllweightsScan.OnAllweightsScanCallback() {
+            @Override
+            public void onFoundBluetoothDevice(BluetoothDevice device) {
+                mLeDeviceListAdapter.addDevice(device);
+            }
+
+            @Override
+            public void onLossBluetoothDevice(BluetoothDevice device) {
+                mLeDeviceListAdapter.remove(device);
+            }
+
+            @Override
+            public void onAllweightsScanStatusChange(Boolean status) {
+                binding.progressBar.setVisibility(status ? View.VISIBLE : View.GONE);
+                binding.button.setVisibility(status ? View.GONE : View.VISIBLE);
+            }
         });
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        bluetoothScan.registerService(requireActivity());
         scanear();
     }
 
@@ -103,7 +112,6 @@ public class FirstFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        bluetoothScan.unRegisterService(requireActivity());
         bluetoothScan.stopScan();
     }
 
@@ -228,7 +236,7 @@ public class FirstFragment extends Fragment {
         } else {
             try {
                 mLeDeviceListAdapter.clear();
-                bluetoothScan.scan(requireActivity());
+                bluetoothScan.scan();
             } catch (AllweightsException e) {
                 Toast.makeText(requireActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
             }

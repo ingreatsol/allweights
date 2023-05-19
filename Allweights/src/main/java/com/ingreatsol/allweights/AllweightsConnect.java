@@ -32,8 +32,7 @@ public class AllweightsConnect {
     public static final String TAG = AllweightsConnect.class.getSimpleName();
 
     private ConnectionStatus mConnectionStatus = ConnectionStatus.DISCONNECTED;
-    private final ArrayList<OnAllweightsDataListener> mOnAllweightsDataListener;
-    private final ArrayList<OnConnectionStatusListener> mOnConectionStatusListener;
+    private final ArrayList<OnAllweightsConnectCallback> mOnAllweightsConnectCallback;
     private String mBluetoothDeviceAddress;
     private Integer deviceType;
     private String entrada = "";
@@ -97,8 +96,7 @@ public class AllweightsConnect {
     };
 
     public AllweightsConnect(@NonNull final Context context) {
-        mOnAllweightsDataListener = new ArrayList<>();
-        mOnConectionStatusListener = new ArrayList<>();
+        mOnAllweightsConnectCallback = new ArrayList<>();
         this.context = context;
         this.mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.mBluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -118,8 +116,8 @@ public class AllweightsConnect {
     private void newConnectionStatus(ConnectionStatus newConnectionStatus) {
         mMainHandler.post(() -> {
             mConnectionStatus = newConnectionStatus;
-            for (OnConnectionStatusListener listener : mOnConectionStatusListener) {
-                listener.onConnectionStatus(mConnectionStatus);
+            for (OnAllweightsConnectCallback listener : mOnAllweightsConnectCallback) {
+                listener.onConnectionStatusChange(mConnectionStatus);
             }
         });
     }
@@ -128,28 +126,16 @@ public class AllweightsConnect {
         return mConnectionStatus;
     }
 
-    public void addOnConnectionStatusListener(OnConnectionStatusListener listener) {
-        mOnConectionStatusListener.add(listener);
+    public void addOnAllweightsConnectCallback(OnAllweightsConnectCallback listener) {
+        mOnAllweightsConnectCallback.add(listener);
     }
 
-    public void removeOnConnectionStatusListener(OnConnectionStatusListener listener) {
-        mOnConectionStatusListener.remove(listener);
+    public void removeOnAllweightsConnectCallback(OnAllweightsConnectCallback listener) {
+        mOnAllweightsConnectCallback.remove(listener);
     }
 
-    public void clearOnConnectionStatusListener() {
-        mOnConectionStatusListener.clear();
-    }
-
-    public void addOnAllweightsDataListener(OnAllweightsDataListener listener) {
-        mOnAllweightsDataListener.add(listener);
-    }
-
-    public void removeOnAllweightsDataListener(OnAllweightsDataListener listener) {
-        mOnAllweightsDataListener.remove(listener);
-    }
-
-    public void clearOnAllweightsDataListener() {
-        mOnAllweightsDataListener.clear();
+    public void clearOnAllweightsConnectCallback() {
+        mOnAllweightsConnectCallback.clear();
     }
 
     @RequiresPermission(allOf = {
@@ -345,8 +331,8 @@ public class AllweightsConnect {
                     entrada = entrada.substring(cont[0].length() + 1);
 
                     mMainHandler.post(() -> {
-                        for (OnAllweightsDataListener listener : mOnAllweightsDataListener) {
-                            listener.onAllweightsData(bluetoothDataRecive);
+                        for (OnAllweightsConnectCallback listener : mOnAllweightsConnectCallback) {
+                            listener.onAllweightsDataChange(bluetoothDataRecive);
                         }
                     });
                 }
@@ -491,11 +477,8 @@ public class AllweightsConnect {
         newConnectionStatus(Objects.requireNonNullElse(action, ConnectionStatus.DISCONNECTED));
     }
 
-    public interface OnConnectionStatusListener {
-        void onConnectionStatus(ConnectionStatus status);
-    }
-
-    public interface OnAllweightsDataListener {
-        void onAllweightsData(AllweightsData data);
+    public interface OnAllweightsConnectCallback {
+        void onAllweightsDataChange(AllweightsData data);
+        void onConnectionStatusChange(ConnectionStatus status);
     }
 }

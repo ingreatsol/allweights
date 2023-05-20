@@ -21,9 +21,12 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.ingreatsol.allweights.AllweightsScan;
-import com.ingreatsol.allweights.AllweightsUtils;
-import com.ingreatsol.allweights.exceptions.AllweightsException;
+import com.ingreatsol.allweights.common.AllweightsBase;
+import com.ingreatsol.allweights.scan.AllweightsBluetoothScan;
+import com.ingreatsol.allweights.scan.AllweightsScan;
+import com.ingreatsol.allweights.scan.AllweightsScanCallback;
+import com.ingreatsol.allweights.common.AllweightsUtils;
+import com.ingreatsol.allweights.common.AllweightsException;
 import com.ingreatsol.allweights.test.databinding.FragmentFirstBinding;
 
 import java.util.ArrayList;
@@ -48,7 +51,7 @@ public class FirstFragment extends Fragment {
             Bundle savedInstanceState
     ) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
-        bluetoothScan = new AllweightsScan(requireActivity());
+        bluetoothScan = new AllweightsBluetoothScan(requireActivity());
 
         mLeDeviceListAdapter = new LeDeviceListAdapter();
 
@@ -83,7 +86,7 @@ public class FirstFragment extends Fragment {
         binding.dispositivos.setAdapter(mLeDeviceListAdapter);
 
         binding.button.setOnClickListener(l -> scanear());
-        bluetoothScan.addOnAllweightsScanCallback(new AllweightsScan.OnAllweightsScanCallback() {
+        bluetoothScan.addOnAllweightsScanCallback(new AllweightsScanCallback() {
             @Override
             public void onFoundBluetoothDevice(BluetoothDevice device) {
                 mLeDeviceListAdapter.addDevice(device);
@@ -118,6 +121,7 @@ public class FirstFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        bluetoothScan.destroy();
         binding = null;
     }
 
@@ -177,7 +181,7 @@ public class FirstFragment extends Fragment {
     public void scanear() {
         Context context = getContext();
         assert context != null;
-        if (AllweightsUtils.isNotExistBluetoothInSystem(context)) {
+        if (bluetoothScan.isNotExistBluetoothInSystem() || bluetoothScan.isNotSuportBluetoothConnection()) {
             new MaterialAlertDialogBuilder(context)
                     .setTitle("Bluetooth no existente")
                     .setMessage("No existe tecnologia bluetooth en este telefono para poder realizar busquedas bluetooth")
@@ -185,7 +189,7 @@ public class FirstFragment extends Fragment {
                         dialogAcept.dismiss();
                     })
                     .show();
-        } else if (!AllweightsUtils.isBluethoothEnabled()) {
+        } else if (!bluetoothScan.isBluethoothEnabled()) {
             new MaterialAlertDialogBuilder(context)
                     .setTitle("Bluetooth desactivado")
                     .setMessage("Se necesita activar el bluetooth para poder detectar dispositivos bluetooth. ¿Desea activarlo?")
@@ -195,7 +199,7 @@ public class FirstFragment extends Fragment {
                         launchEnableBle();
                     })
                     .show();
-        } else if (AllweightsUtils.isRequiredPermisionLocation() && !AllweightsUtils.isLocationEnabled(context)) {
+        } else if (AllweightsUtils.isRequiredPermisionLocation() && !bluetoothScan.isLocationEnabled()) {
             new MaterialAlertDialogBuilder(context)
                     .setTitle("Ubicacion desactivada")
                     .setMessage("Se necesita activar la ubicación para poder detectar dispositivos bluetooth. ¿Desea activarla?")
@@ -205,9 +209,9 @@ public class FirstFragment extends Fragment {
                         launchEnableLocation();
                     })
                     .show();
-        } else if (AllweightsUtils.isMissingPermisionBluetooth(context)) {
+        } else if (bluetoothScan.isMissingPermisionBluetooth()) {
             if (permisoDenegado) {
-                manejarDenegacionDePermiso(AllweightsUtils.Permission.BLUETOOTH);
+                manejarDenegacionDePermiso(AllweightsBase.Permission.BLUETOOTH);
             } else {
                 new MaterialAlertDialogBuilder(context)
                         .setTitle("Permiso de buetooth")
@@ -215,13 +219,13 @@ public class FirstFragment extends Fragment {
                         .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
                         .setPositiveButton("Activar permiso", (dialogAcept, which) -> {
                             dialogAcept.dismiss();
-                            selectTipeLauncherPermission(AllweightsUtils.Permission.BLUETOOTH);
+                            selectTipeLauncherPermission(AllweightsBase.Permission.BLUETOOTH);
                         })
                         .show();
             }
-        } else if (AllweightsUtils.isMissingPermisionLocation(context)) {
+        } else if (bluetoothScan.isMissingPermisionLocation()) {
             if (permisoDenegado) {
-                manejarDenegacionDePermiso(AllweightsUtils.Permission.LOCATION);
+                manejarDenegacionDePermiso(AllweightsBase.Permission.LOCATION);
             } else {
                 new MaterialAlertDialogBuilder(context)
                         .setTitle("Permiso de ubicación")
@@ -229,7 +233,7 @@ public class FirstFragment extends Fragment {
                         .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
                         .setPositiveButton("Activar permiso", (dialogAcept, which) -> {
                             dialogAcept.dismiss();
-                            selectTipeLauncherPermission(AllweightsUtils.Permission.LOCATION);
+                            selectTipeLauncherPermission(AllweightsBase.Permission.LOCATION);
                         })
                         .show();
             }

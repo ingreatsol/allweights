@@ -1,7 +1,7 @@
 package com.ingreatsol.allweights.test;
 
-import static com.ingreatsol.allweights.AllweightsUtils.LIMITE_BATERIA;
-import static com.ingreatsol.allweights.AllweightsUtils.RANGO_MINIMO_BATERIA;
+import static com.ingreatsol.allweights.common.AllweightsBase.LIMITE_BATERIA;
+import static com.ingreatsol.allweights.common.AllweightsBase.RANGO_MINIMO_BATERIA;
 
 import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;
@@ -15,9 +15,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.ingreatsol.allweights.AllweightsConnect;
-import com.ingreatsol.allweights.AllweightsData;
-import com.ingreatsol.allweights.ConnectionStatus;
+import com.ingreatsol.allweights.connect.AllweightsBleConnect;
+import com.ingreatsol.allweights.connect.AllweightsBluetoothConnect;
+import com.ingreatsol.allweights.connect.AllweightsConnect;
+import com.ingreatsol.allweights.connect.AllweightsData;
+import com.ingreatsol.allweights.connect.ConnectionStatus;
+import com.ingreatsol.allweights.connect.AllweightsConnectCallback;
 import com.ingreatsol.allweights.test.databinding.FragmentSecondBinding;
 
 public class SecondFragment extends Fragment {
@@ -25,7 +28,7 @@ public class SecondFragment extends Fragment {
     private FragmentSecondBinding binding;
     private AllweightsConnect allweightsConnect;
 
-    AllweightsConnect.OnAllweightsConnectCallback onAllweightsConnectCallback = new AllweightsConnect.OnAllweightsConnectCallback() {
+    AllweightsConnectCallback onAllweightsConnectCallback = new AllweightsConnectCallback() {
         @SuppressLint("SetTextI18n")
         @Override
         public void onAllweightsDataChange(@NonNull AllweightsData data) {
@@ -61,9 +64,15 @@ public class SecondFragment extends Fragment {
         assert getArguments() != null;
 
         String deviceAddres = getArguments().getString("deviceAddress");
-        Integer deviceType = getArguments().getInt("deviceType");
+        int deviceType = getArguments().getInt("deviceType");
 
-        allweightsConnect = new AllweightsConnect(requireActivity());
+        if (deviceType == 1){
+            allweightsConnect = new AllweightsBluetoothConnect(requireActivity());
+        }
+        else {
+            allweightsConnect = new AllweightsBleConnect(requireActivity());
+        }
+
         allweightsConnect.setDevice(deviceAddres, deviceType);
         return binding.getRoot();
     }
@@ -110,7 +119,7 @@ public class SecondFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        allweightsConnect.destroyService();
+        allweightsConnect.destroy();
     }
 
     @SuppressLint("MissingPermission")

@@ -1,4 +1,4 @@
-package com.ingreatsol.allweights.exceptions;
+package com.ingreatsol.allweights.common;
 
 public class AllweightsException extends Exception {
     public AllweightsException() {

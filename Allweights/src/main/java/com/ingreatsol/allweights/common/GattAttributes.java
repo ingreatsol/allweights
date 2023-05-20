@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ingreatsol.allweights;
+package com.ingreatsol.allweights.common;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.IntentFilter;
@@ -24,7 +24,7 @@ import androidx.annotation.NonNull;
 import java.util.HashMap;
 import java.util.UUID;
 
-class GattAttributes {
+public class GattAttributes {
     private static final HashMap<UUID, String> attributes = new HashMap<>();
     public static UUID HEART_RATE_MEASUREMENT = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
     public static UUID HEART_RATE_SERVICE = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb");

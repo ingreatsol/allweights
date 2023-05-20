@@ -1,4 +1,4 @@
-package com.ingreatsol.allweights;
+package com.ingreatsol.allweights.connect;
 
 public enum ConnectionStatus {
     CONNECTED, CONNECTING, DISCONNECTED, DISCONNECTING

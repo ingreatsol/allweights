@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public abstract class AllweightsScan extends AllweightsBase {
     protected Boolean mScanning = false;
     protected final ArrayList<AllweightsScanCallback> mOnAllweightsScanCallback;
-    public static final long SCAN_PERIOD = 10000;
+    protected static final long SCAN_PERIOD = 10000;
 
     public AllweightsScan(@NonNull final Context context, String feature) {
         super(context,feature);

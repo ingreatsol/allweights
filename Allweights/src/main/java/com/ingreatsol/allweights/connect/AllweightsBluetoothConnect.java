@@ -129,6 +129,11 @@ public class AllweightsBluetoothConnect extends AllweightsConnect {
         return r.write(message.getBytes());
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+    }
+
     /**
      * This thread runs while attempting to make an outgoing connection
      * with a device. It runs straight through; the connection either

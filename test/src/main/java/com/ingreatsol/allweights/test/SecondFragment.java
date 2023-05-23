@@ -1,7 +1,7 @@
 package com.ingreatsol.allweights.test;
 
-import static com.ingreatsol.allweights.common.AllweightsBase.LIMITE_BATERIA;
-import static com.ingreatsol.allweights.common.AllweightsBase.RANGO_MINIMO_BATERIA;
+import static com.ingreatsol.allweights.common.AllweightsUtils.LIMITE_BATERIA;
+import static com.ingreatsol.allweights.common.AllweightsUtils.RANGO_MINIMO_BATERIA;
 
 import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;

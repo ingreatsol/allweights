@@ -131,8 +131,8 @@ public abstract class AllweightsConnect extends AllweightsBase {
         Log.d(TAG, "Disconnected " + mFeature);
     }
 
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
     public void destroy() {
+        Log.d(TAG, "destroy");
         mBluetoothDeviceAddress = null;
         deviceType = null;
         entrada = null;

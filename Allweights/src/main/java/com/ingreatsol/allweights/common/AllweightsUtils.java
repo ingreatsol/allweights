@@ -11,6 +11,19 @@ import java.util.ArrayList;
 
 public class AllweightsUtils {
 
+    public static final float RANGO_MAXIMO_BATERIA = 4.2f;
+    public static final float RANGO_MINIMO_BATERIA = 3.2f;
+    public static final float LIMITE_BATERIA = RANGO_MAXIMO_BATERIA - RANGO_MINIMO_BATERIA;
+
+    public static final class Permission {
+        public static final String[] LOCATION = new String[]{
+                "android.permission.ACCESS_FINE_LOCATION",
+                "android.permission.ACCESS_COARSE_LOCATION"};
+        public static final String[] BLUETOOTH = new String[]{
+                "android.permission.BLUETOOTH_SCAN",
+                "android.permission.BLUETOOTH_CONNECT"};
+    }
+
     @NonNull
     public static ArrayList<String> shouldMapPermission(FragmentActivity activity, @NonNull String... permissionSend) {
         ArrayList<String> permissionsShoulShow = new ArrayList<>();

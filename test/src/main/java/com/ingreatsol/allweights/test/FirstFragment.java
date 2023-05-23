@@ -212,7 +212,7 @@ public class FirstFragment extends Fragment {
                     .show();
         } else if (bluetoothScan.isMissingPermisionBluetooth()) {
             if (permisoDenegado) {
-                manejarDenegacionDePermiso(AllweightsBase.Permission.BLUETOOTH);
+                manejarDenegacionDePermiso(AllweightsUtils.Permission.BLUETOOTH);
             } else {
                 new MaterialAlertDialogBuilder(context)
                         .setTitle("Permiso de buetooth")
@@ -220,13 +220,13 @@ public class FirstFragment extends Fragment {
                         .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
                         .setPositiveButton("Activar permiso", (dialogAcept, which) -> {
                             dialogAcept.dismiss();
-                            selectTipeLauncherPermission(AllweightsBase.Permission.BLUETOOTH);
+                            selectTipeLauncherPermission(AllweightsUtils.Permission.BLUETOOTH);
                         })
                         .show();
             }
         } else if (bluetoothScan.isMissingPermisionLocation()) {
             if (permisoDenegado) {
-                manejarDenegacionDePermiso(AllweightsBase.Permission.LOCATION);
+                manejarDenegacionDePermiso(AllweightsUtils.Permission.LOCATION);
             } else {
                 new MaterialAlertDialogBuilder(context)
                         .setTitle("Permiso de ubicación")
@@ -234,7 +234,7 @@ public class FirstFragment extends Fragment {
                         .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
                         .setPositiveButton("Activar permiso", (dialogAcept, which) -> {
                             dialogAcept.dismiss();
-                            selectTipeLauncherPermission(AllweightsBase.Permission.LOCATION);
+                            selectTipeLauncherPermission(AllweightsUtils.Permission.LOCATION);
                         })
                         .show();
             }

@@ -9,30 +9,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import androidx.annotation.ChecksSdkIntAtLeast;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresPermission;
 import androidx.core.content.ContextCompat;
-
-import com.ingreatsol.allweights.connect.ConnectionStatus;
 
 import java.util.Arrays;
 import java.util.Objects;
 
 public abstract class AllweightsBase {
-    public static final String TAG = "AllweightsLibrary";
-    public static final float RANGO_MAXIMO_BATERIA = 4.2f;
-    public static final float RANGO_MINIMO_BATERIA = 3.2f;
-    public static final float LIMITE_BATERIA = RANGO_MAXIMO_BATERIA - RANGO_MINIMO_BATERIA;
-
-    public static final class Permission {
-        public static final String[] LOCATION = new String[]{
-                "android.permission.ACCESS_FINE_LOCATION",
-                "android.permission.ACCESS_COARSE_LOCATION"};
-        public static final String[] BLUETOOTH = new String[]{
-                "android.permission.BLUETOOTH_SCAN",
-                "android.permission.BLUETOOTH_CONNECT"};
-    }
+    protected static final String TAG = "AllweightsLibrary";
 
     protected final Context context;
     protected final BluetoothAdapter mBluetoothAdapter;
@@ -124,9 +108,9 @@ public abstract class AllweightsBase {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return Arrays.stream(Permission.BLUETOOTH).anyMatch(this::checkPermissionsIfNecessary);
+            return Arrays.stream(AllweightsUtils.Permission.BLUETOOTH).anyMatch(this::checkPermissionsIfNecessary);
         } else {
-            for (String permission : Permission.BLUETOOTH) {
+            for (String permission : AllweightsUtils.Permission.BLUETOOTH) {
                 if (checkPermissionsIfNecessary(permission)) {
                     return true;
                 }
@@ -141,9 +125,9 @@ public abstract class AllweightsBase {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return Arrays.stream(Permission.LOCATION).anyMatch(this::checkPermissionsIfNecessary);
+            return Arrays.stream(AllweightsUtils.Permission.LOCATION).anyMatch(this::checkPermissionsIfNecessary);
         } else {
-            for (String permission : Permission.LOCATION) {
+            for (String permission : AllweightsUtils.Permission.LOCATION) {
                 if (checkPermissionsIfNecessary(permission)) {
                     return true;
                 }

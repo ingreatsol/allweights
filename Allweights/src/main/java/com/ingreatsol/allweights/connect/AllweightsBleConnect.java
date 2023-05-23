@@ -121,7 +121,7 @@ public class AllweightsBleConnect extends AllweightsConnect {
         sendStateConection();
     }
 
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    @SuppressLint("MissingPermission")
     public void destroy() {
         super.destroy();
         if (mBluetoothGatt == null) {

@@ -171,7 +171,7 @@ public class AllweightsBluetoothConnect extends AllweightsConnect {
         })
         public void run() {
             Log.i(TAG, "BEGIN mConnectThread SocketType:" + mSocketType);
-            setName("ConnectThread" + mSocketType);
+            setName("ConnectThread " + mSocketType);
 
             // Always cancel discovery because it will slow down a connection
             mBluetoothAdapter.cancelDiscovery();

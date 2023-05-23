@@ -22,6 +22,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.ingreatsol.allweights.common.AllweightsBase;
+import com.ingreatsol.allweights.scan.AllweightsBleScan;
 import com.ingreatsol.allweights.scan.AllweightsBluetoothScan;
 import com.ingreatsol.allweights.scan.AllweightsScan;
 import com.ingreatsol.allweights.scan.AllweightsScanCallback;
@@ -51,7 +52,7 @@ public class FirstFragment extends Fragment {
             Bundle savedInstanceState
     ) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
-        bluetoothScan = new AllweightsBluetoothScan(requireActivity());
+        bluetoothScan = new AllweightsBleScan(requireActivity());
 
         mLeDeviceListAdapter = new LeDeviceListAdapter();
 

@@ -50,7 +50,7 @@ public class AllweightsBluetoothScan extends AllweightsScan {
             context.unregisterReceiver(mBluetoothDeviceUpdateReceiver);
         }
         catch (Exception exception){
-            Log.d(TAG, "Register broacast reciever error",exception);
+            Log.d(TAG, "Unregister broacast reciever error",exception);
         }
     }
 

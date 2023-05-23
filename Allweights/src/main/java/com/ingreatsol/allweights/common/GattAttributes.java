@@ -26,22 +26,14 @@ import java.util.UUID;
 
 public class GattAttributes {
     private static final HashMap<UUID, String> attributes = new HashMap<>();
+    public static UUID SERVICE_UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
+    public static UUID SHOW_DATA = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
     public static UUID HEART_RATE_MEASUREMENT = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
     public static UUID HEART_RATE_SERVICE = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb");
-    public static UUID SHOW_DATA = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
     public static UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     public static UUID DEVICE_INFORMATION_SERVICE = UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb");
     public static UUID MANUFACTURER_NAME = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb");
-    public static UUID DEVICE_DATA = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
     public static UUID DEVICE_NAME = UUID.fromString("00002a00-0000-1000-8000-00805f9b34fb");
-
-    public final static String ACTION_GATT_CONNECTED = "com.ingreatsol.bluetooth.le.ACTION_GATT_CONNECTED";
-    public final static String ACTION_GATT_CONNECTING = "com.ingreatsol.bluetooth.le.ACTION_GATT_CONNECTING";
-    public final static String ACTION_GATT_DISCONNECTED = "com.ingreatsol.bluetooth.le.ACTION_GATT_DISCONNECTED";
-    public final static String ACTION_GATT_DISCONNECTING = "com.ingreatsol.bluetooth.le.ACTION_GATT_DISCONNECTING";
-    public final static String ACTION_GATT_SERVICES_DISCOVERED = "com.ingreatsol.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_AVAILABLE = "com.ingreatsol.bluetooth.le.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_DATA = "com.ingreatsol.bluetooth.le.EXTRA_DATA";
 
     static {
         // Sample Services.
@@ -50,7 +42,7 @@ public class GattAttributes {
         // Sample Characteristics.
         attributes.put(HEART_RATE_MEASUREMENT, "Heart Rate Measurement");
         attributes.put(MANUFACTURER_NAME, "Manufacturer Name String");
-        attributes.put(DEVICE_DATA, "Device Data");
+        attributes.put(SERVICE_UUID, "Device Data");
         attributes.put(SHOW_DATA, "Show data");
         attributes.put(DEVICE_NAME, "Device Name");
     }
@@ -58,18 +50,6 @@ public class GattAttributes {
     public static String lookup(UUID uuid, String defaultName) {
         String name = attributes.get(uuid);
         return name == null ? defaultName : name;
-    }
-
-    @NonNull
-    public static IntentFilter makeGattUpdateIntentFilter() {
-        final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ACTION_GATT_CONNECTED);
-        intentFilter.addAction(ACTION_GATT_CONNECTING);
-        intentFilter.addAction(ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(ACTION_GATT_DISCONNECTING);
-        intentFilter.addAction(ACTION_GATT_SERVICES_DISCOVERED);
-        intentFilter.addAction(ACTION_DATA_AVAILABLE);
-        return intentFilter;
     }
 
     @NonNull

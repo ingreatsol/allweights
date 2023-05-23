@@ -9,11 +9,13 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.ParcelUuid;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
 
 import com.ingreatsol.allweights.common.AllweightsException;
+import com.ingreatsol.allweights.common.GattAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +82,9 @@ public class AllweightsBleScan extends AllweightsScan {
         super.scan();
 
         ArrayList<ScanFilter> scanFilters = new ArrayList<>();
+        scanFilters.add(new ScanFilter.Builder()
+                .setServiceUuid(new ParcelUuid(GattAttributes.SERVICE_UUID))
+                .build());
         ScanSettings scanSettings = new ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                 .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)

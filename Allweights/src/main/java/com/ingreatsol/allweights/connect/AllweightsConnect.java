@@ -52,7 +52,9 @@ public abstract class AllweightsConnect extends AllweightsBase {
     }
 
     public void addOnAllweightsConnectCallback(AllweightsConnectCallback listener) {
-        mOnAllweightsConnectCallback.add(listener);
+        if (!mOnAllweightsConnectCallback.contains(listener)) {
+            mOnAllweightsConnectCallback.add(listener);
+        }
     }
 
     public void removeOnAllweightsConnectCallback(AllweightsConnectCallback listener) {

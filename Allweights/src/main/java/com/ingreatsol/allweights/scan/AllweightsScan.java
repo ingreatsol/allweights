@@ -31,7 +31,9 @@ public abstract class AllweightsScan extends AllweightsBase {
     }
 
     public void addOnAllweightsScanCallback(AllweightsScanCallback listener) {
-        mOnAllweightsScanCallback.add(listener);
+        if (!mOnAllweightsScanCallback.contains(listener)) {
+            mOnAllweightsScanCallback.add(listener);
+        }
     }
 
     public void removeOnAllweightsScanCallback(AllweightsScanCallback listener) {

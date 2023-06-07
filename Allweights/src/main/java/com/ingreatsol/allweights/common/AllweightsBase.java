@@ -11,6 +11,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.location.LocationManagerCompat;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -71,21 +72,8 @@ public abstract class AllweightsBase {
 
     @NonNull
     public Boolean isLocationEnabled() {
-        LocationManager lm = (LocationManager)
-                context.getSystemService(Context.LOCATION_SERVICE);
-        boolean gps_enabled = false;
-        boolean network_enabled = false;
-        try {
-            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-        try {
-            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-        return gps_enabled && network_enabled;
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        return LocationManagerCompat.isLocationEnabled(locationManager);
     }
 
     public Boolean isBluethoothEnabled() {

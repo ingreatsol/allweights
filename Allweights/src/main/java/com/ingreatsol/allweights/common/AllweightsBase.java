@@ -44,6 +44,16 @@ public abstract class AllweightsBase {
         return !context.getPackageManager().hasSystemFeature(mFeature);
     }
 
+    protected void checkLocation() throws AllweightsException {
+        if (!isLocationEnabled()) {
+            throw new AllweightsException("Ubicación no habilitada");
+        }
+
+        if (isMissingPermisionLocation()) {
+            throw new AllweightsException("Faltan permisos de ubicacion");
+        }
+    }
+
     protected void checkBluetooth() throws AllweightsException {
         if (!context.getPackageManager().hasSystemFeature(mFeature) || isNotSuportBluetoothConnection()) {
             if (Objects.equals(mFeature, PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -55,14 +65,6 @@ public abstract class AllweightsBase {
 
         if (!isBluethoothEnabled()) {
             throw new AllweightsException("Bluetooth no habilitado");
-        }
-
-        if (!isLocationEnabled()) {
-            throw new AllweightsException("Ubicación no habilitada");
-        }
-
-        if (isMissingPermisionLocation()) {
-            throw new AllweightsException("Faltan permisos de ubicacion");
         }
 
         if (isMissingPermisionBluetooth()) {
@@ -87,7 +89,6 @@ public abstract class AllweightsBase {
         }
         return bluetooth_enabled;
     }
-
 
 
     public boolean isMissingPermisionBluetooth() {

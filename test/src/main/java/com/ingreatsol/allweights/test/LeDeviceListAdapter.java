@@ -65,6 +65,7 @@ public class LeDeviceListAdapter extends BaseAdapter {
     }
 
     @Override
+    @SuppressLint({"MissingPermission", "SetTextI18n"})
     public View getView(int position, View view, ViewGroup parent) {
         ViewHolder viewHolder;
         if (view == null) {
@@ -82,9 +83,9 @@ public class LeDeviceListAdapter extends BaseAdapter {
 
         BluetoothDevice device = mLeDevices.get(position);
 
-        @SuppressLint("MissingPermission") final String deviceName = device.getName();
+         final String deviceName = device.getName();
         if (deviceName != null && deviceName.length() > 0)
-            viewHolder.binding.deviceName.setText(deviceName);
+            viewHolder.binding.deviceName.setText(deviceName + " T" + device.getType());
         else
             viewHolder.binding.deviceName.setText(R.string.unknown_service);
         viewHolder.binding.deviceAddress.setText(device.getAddress());

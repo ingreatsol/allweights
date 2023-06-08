@@ -31,26 +31,12 @@ public class AllweightsBleScan extends AllweightsScan {
             public synchronized void onScanResult(int callbackType, ScanResult result) {
                 super.onScanResult(callbackType, result);
                 synchronized (channelsLock) {
-                    switch (callbackType) {
-                        case ScanSettings.CALLBACK_TYPE_FIRST_MATCH: {
-                            BluetoothDevice device1 = result.getDevice();
-                            mMainHandler.post(() -> {
-                                for (AllweightsScanCallback listener : mOnAllweightsScanCallback) {
-                                    listener.onFoundBluetoothDevice(device1);
-                                }
-                            });
-                            break;
+                    BluetoothDevice device1 = result.getDevice();
+                    mMainHandler.post(() -> {
+                        for (AllweightsScanCallback listener : mOnAllweightsScanCallback) {
+                            listener.onFoundBluetoothDevice(device1);
                         }
-                        case ScanSettings.CALLBACK_TYPE_MATCH_LOST: {
-                            BluetoothDevice device1 = result.getDevice();
-                            mMainHandler.post(() -> {
-                                for (AllweightsScanCallback listener : mOnAllweightsScanCallback) {
-                                    listener.onLossBluetoothDevice(device1);
-                                }
-                            });
-                            break;
-                        }
-                    }
+                    });
                 }
             }
 
@@ -85,16 +71,9 @@ public class AllweightsBleScan extends AllweightsScan {
         scanFilters.add(new ScanFilter.Builder()
                 .setServiceUuid(new ParcelUuid(GattAttributes.SERVICE_UUID))
                 .build());
-        ScanSettings scanSettings = new ScanSettings.Builder()
-                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
-                .setNumOfMatches(ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT)
-                .setReportDelay(0)
-                .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH | ScanSettings.CALLBACK_TYPE_MATCH_LOST)
-                .build();
         BluetoothLeScanner scanner = mBluetoothAdapter.getBluetoothLeScanner();
 
-        scanner.startScan(scanFilters, scanSettings, discoveryCallback);
+        scanner.startScan(scanFilters, new ScanSettings.Builder().build(), discoveryCallback);
 
         newScanStatus(true);
     }

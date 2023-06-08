@@ -52,7 +52,7 @@ public class FirstFragment extends Fragment {
             Bundle savedInstanceState
     ) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
-        bluetoothScan = new AllweightsBleScan(requireActivity());
+        bluetoothScan = new AllweightsBluetoothScan(requireActivity());
 
         mLeDeviceListAdapter = new LeDeviceListAdapter();
 
@@ -91,11 +91,6 @@ public class FirstFragment extends Fragment {
             @Override
             public void onFoundBluetoothDevice(BluetoothDevice device) {
                 mLeDeviceListAdapter.addDevice(device);
-            }
-
-            @Override
-            public void onLossBluetoothDevice(BluetoothDevice device) {
-                mLeDeviceListAdapter.remove(device);
             }
 
             @Override

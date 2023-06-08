@@ -49,6 +49,7 @@ public abstract class AllweightsScan extends AllweightsBase {
 
     public void scan() throws AllweightsException {
         checkBluetooth();
+        checkLocation();
 
         stopScan();
 

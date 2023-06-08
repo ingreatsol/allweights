@@ -34,23 +34,22 @@ public class AllweightsBluetoothScan extends AllweightsScan {
                 }
             }
         };
+        registerService();
     }
 
     private void registerService() {
         try {
             context.registerReceiver(mBluetoothDeviceUpdateReceiver, GattAttributes.makeBluetoothUpdateIntentFilter());
-        }
-        catch (Exception exception){
-            Log.d(TAG, "Register broacast reciever error",exception);
+        } catch (Exception exception) {
+            Log.d(TAG, "Register broacast reciever error", exception);
         }
     }
 
     private void unRegisterService() {
         try {
             context.unregisterReceiver(mBluetoothDeviceUpdateReceiver);
-        }
-        catch (Exception exception){
-            Log.d(TAG, "Unregister broacast reciever error",exception);
+        } catch (Exception exception) {
+            Log.d(TAG, "Unregister broacast reciever error", exception);
         }
     }
 
@@ -61,7 +60,6 @@ public class AllweightsBluetoothScan extends AllweightsScan {
         if (mScanning) {
             mBluetoothAdapter.cancelDiscovery();
             newScanStatus(false);
-            unRegisterService();
         }
     }
 
@@ -69,9 +67,14 @@ public class AllweightsBluetoothScan extends AllweightsScan {
     @Override
     public void scan() throws AllweightsException {
         super.scan();
-        registerService();
-        mBluetoothAdapter.startDiscovery();
 
+        mBluetoothAdapter.startDiscovery();
         newScanStatus(true);
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        unRegisterService();
     }
 }

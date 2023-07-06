@@ -16,9 +16,19 @@ public class AllweightsUtils {
     public static final float LIMITE_BATERIA = RANGO_MAXIMO_BATERIA - RANGO_MINIMO_BATERIA;
 
     public static final class Permission {
-        public static final String[] LOCATION = new String[]{
-                "android.permission.ACCESS_FINE_LOCATION",
-                "android.permission.ACCESS_COARSE_LOCATION"};
+        @NonNull
+        public static String[] LOCATION() {
+            var permissions = new ArrayList<String>();
+
+            if (isRequiredPermisionLocation()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    permissions.add("android.permission.ACCESS_FINE_LOCATION");
+                }
+                permissions.add("android.permission.ACCESS_COARSE_LOCATION");
+            }
+            return permissions.toArray(new String[0]);
+        }
+
         public static final String[] BLUETOOTH = new String[]{
                 "android.permission.BLUETOOTH_SCAN",
                 "android.permission.BLUETOOTH_CONNECT"};
@@ -39,8 +49,7 @@ public class AllweightsUtils {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.S;
     }
 
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
-    public static boolean isRequiredPermisionBluetooth() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+    public static boolean isNotRequiredPermisionBluetooth() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.S;
     }
 }

@@ -177,7 +177,7 @@ public class FirstFragment extends Fragment {
     public void scanear() {
         Context context = getContext();
         assert context != null;
-        if (bluetoothScan.isNotExistBluetoothInSystem() || bluetoothScan.isNotSuportBluetoothConnection()) {
+        if (bluetoothScan.isNotExistBluetoothInSystem()) {
             new MaterialAlertDialogBuilder(context)
                     .setTitle("Bluetooth no existente")
                     .setMessage("No existe tecnologia bluetooth en este telefono para poder realizar busquedas bluetooth")
@@ -195,7 +195,7 @@ public class FirstFragment extends Fragment {
                         launchEnableBle();
                     })
                     .show();
-        } else if (AllweightsUtils.isRequiredPermisionLocation() && !bluetoothScan.isLocationEnabled()) {
+        } else if (!bluetoothScan.isLocationEnabled()) {
             new MaterialAlertDialogBuilder(context)
                     .setTitle("Ubicacion desactivada")
                     .setMessage("Se necesita activar la ubicación para poder detectar dispositivos bluetooth. ¿Desea activarla?")
@@ -221,7 +221,7 @@ public class FirstFragment extends Fragment {
             }
         } else if (bluetoothScan.isMissingPermisionLocation()) {
             if (permisoDenegado) {
-                manejarDenegacionDePermiso(AllweightsUtils.Permission.LOCATION);
+                manejarDenegacionDePermiso(AllweightsUtils.Permission.LOCATION());
             } else {
                 new MaterialAlertDialogBuilder(context)
                         .setTitle("Permiso de ubicación")
@@ -229,7 +229,7 @@ public class FirstFragment extends Fragment {
                         .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
                         .setPositiveButton("Activar permiso", (dialogAcept, which) -> {
                             dialogAcept.dismiss();
-                            selectTipeLauncherPermission(AllweightsUtils.Permission.LOCATION);
+                            selectTipeLauncherPermission(AllweightsUtils.Permission.LOCATION());
                         })
                         .show();
             }

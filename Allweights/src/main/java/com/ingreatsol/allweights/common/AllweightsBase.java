@@ -92,7 +92,7 @@ public abstract class AllweightsBase {
 
 
     public boolean isMissingPermisionBluetooth() {
-        if (!AllweightsUtils.isRequiredPermisionBluetooth()) {
+        if (AllweightsUtils.isNotRequiredPermisionBluetooth()) {
             return false;
         }
 
@@ -114,9 +114,9 @@ public abstract class AllweightsBase {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return Arrays.stream(AllweightsUtils.Permission.LOCATION).anyMatch(this::checkPermissionsIfNecessary);
+            return Arrays.stream(AllweightsUtils.Permission.LOCATION()).anyMatch(this::checkPermissionsIfNecessary);
         } else {
-            for (String permission : AllweightsUtils.Permission.LOCATION) {
+            for (String permission : AllweightsUtils.Permission.LOCATION()) {
                 if (checkPermissionsIfNecessary(permission)) {
                     return true;
                 }
@@ -129,12 +129,11 @@ public abstract class AllweightsBase {
         switch (permissionSend) {
             case "android.permission.ACCESS_FINE_LOCATION":
             case "android.permission.ACCESS_COARSE_LOCATION":
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) return false;
+                if (!AllweightsUtils.isRequiredPermisionLocation()) return false;
                 break;
             case "android.permission.BLUETOOTH_SCAN":
-            case "android.Permission.BLUETOOTH_ADVERTISE":
             case "android.permission.BLUETOOTH_CONNECT":
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return false;
+                if (AllweightsUtils.isNotRequiredPermisionBluetooth()) return false;
                 break;
         }
 

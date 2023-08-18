@@ -20,6 +20,7 @@ import androidx.annotation.RequiresPermission;
 import com.ingreatsol.allweights.common.AllweightsException;
 import com.ingreatsol.allweights.common.GattAttributes;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 
@@ -91,23 +92,22 @@ public class AllweightsBleConnect extends AllweightsConnect {
 
         // Previously connected device.  Try to reconnect.
         if (mBluetoothGatt != null) {
-            Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
-
-            mBluetoothGatt.connect();
-            sendStateConection();
-
-            return;
+            Log.d(TAG, "Trying to force connection: " + mBluetoothDeviceAddress);
+            mBluetoothGatt.disconnect();
+            mBluetoothGatt = null;
         }
 
         BluetoothDevice mDevice = mBluetoothAdapter.getRemoteDevice(mBluetoothDeviceAddress);
         if (mDevice == null) {
-            Log.w(TAG, "Device not found.  Unable to connect.");
+            Log.w(TAG, "Device not found. Unable to connect.");
             return;
         }
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
-        mBluetoothGatt = mDevice.connectGatt(context, false, mGattCallback);
+        mBluetoothGatt = mDevice.connectGatt(context, false, mGattCallback, BluetoothDevice.TRANSPORT_LE);
         Log.d(TAG, "Trying to create a new connection.");
+        var refreshResult = refreshDeviceCache(mBluetoothGatt);
+        Log.d(TAG, "BluetoothGatt invoquing refresh result is: " + refreshResult);
         sendStateConection();
     }
 
@@ -130,6 +130,17 @@ public class AllweightsBleConnect extends AllweightsConnect {
         mBluetoothGatt.close();
         mBluetoothGatt = null;
         sendStateConection();
+    }
+
+    @SuppressWarnings({"JavaReflectionMemberAccess", "ConstantConditions"})
+    private boolean refreshDeviceCache(BluetoothGatt gatt) {
+        try {
+            Method localMethod = gatt.getClass().getMethod("refresh");
+            return (Boolean) localMethod.invoke(gatt);
+        } catch (Exception localException) {
+            Log.e("ble", "An exception occured while refreshing device");
+        }
+        return false;
     }
 
     private void procesardatos(@NonNull final BluetoothGattCharacteristic characteristic) {

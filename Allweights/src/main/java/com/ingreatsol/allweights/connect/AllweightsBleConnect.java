@@ -84,7 +84,8 @@ public class AllweightsBleConnect extends AllweightsConnect {
 
     @RequiresPermission(allOf = {
             "android.permission.BLUETOOTH_SCAN",
-            "android.permission.BLUETOOTH_CONNECT"
+            "android.permission.BLUETOOTH_CONNECT",
+            "android.permission.BLUETOOTH_ADMIN"
     })
     @Override
     public void connect() throws AllweightsException {
@@ -109,6 +110,12 @@ public class AllweightsBleConnect extends AllweightsConnect {
         var refreshResult = refreshDeviceCache(mBluetoothGatt);
         Log.d(TAG, "BluetoothGatt invoquing refresh result is: " + refreshResult);
         sendStateConection();
+
+        if (isDeviceBonded(mDevice)){
+            if (!unBondDevice(mDevice)){
+                Log.w(TAG, "Device unbond failed");
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -132,15 +139,44 @@ public class AllweightsBleConnect extends AllweightsConnect {
         sendStateConection();
     }
 
-    @SuppressWarnings({"JavaReflectionMemberAccess", "ConstantConditions"})
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    private boolean isDeviceBonded(BluetoothDevice mDevice) {
+        boolean bonded = false;
+
+        for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
+            if (device.getAddress().equals(mDevice.getAddress())){
+                bonded = true;
+                break;
+            }
+        }
+
+        return bonded;
+    }
+
+    @RequiresPermission("android.permission.BLUETOOTH_ADMIN")
+    private boolean unBondDevice(BluetoothDevice device) {
+        try {
+            //noinspection JavaReflectionMemberAccess
+            Method m = device.getClass()
+                    .getMethod("removeBond");
+            //noinspection DataFlowIssue
+            return (Boolean) m.invoke(device);
+        } catch (Exception e) {
+            Log.e(TAG,"unBondDevice", e);
+            return false;
+        }
+    }
+
     private boolean refreshDeviceCache(BluetoothGatt gatt) {
         try {
+            //noinspection JavaReflectionMemberAccess
             Method localMethod = gatt.getClass().getMethod("refresh");
+            //noinspection DataFlowIssue
             return (Boolean) localMethod.invoke(gatt);
         } catch (Exception localException) {
             Log.e("ble", "An exception occured while refreshing device");
+            return false;
         }
-        return false;
     }
 
     private void procesardatos(@NonNull final BluetoothGattCharacteristic characteristic) {

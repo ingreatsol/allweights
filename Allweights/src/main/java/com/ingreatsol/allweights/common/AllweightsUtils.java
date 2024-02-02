@@ -2,7 +2,6 @@ package com.ingreatsol.allweights.common;
 
 import android.os.Build;
 
-import androidx.annotation.ChecksSdkIntAtLeast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;

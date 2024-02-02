@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -37,9 +38,14 @@ public class AllweightsBluetoothScan extends AllweightsScan {
         registerService();
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private void registerService() {
         try {
-            context.registerReceiver(mBluetoothDeviceUpdateReceiver, GattAttributes.makeBluetoothUpdateIntentFilter());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.registerReceiver(mBluetoothDeviceUpdateReceiver, GattAttributes.makeBluetoothUpdateIntentFilter(), Context.RECEIVER_EXPORTED);
+            } else {
+                context.registerReceiver(mBluetoothDeviceUpdateReceiver, GattAttributes.makeBluetoothUpdateIntentFilter());
+            }
         } catch (Exception exception) {
             Log.d(TAG, "Register broacast reciever error", exception);
         }

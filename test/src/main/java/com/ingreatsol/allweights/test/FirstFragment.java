@@ -21,13 +21,11 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.ingreatsol.allweights.common.AllweightsBase;
-import com.ingreatsol.allweights.scan.AllweightsBleScan;
+import com.ingreatsol.allweights.common.AllweightsException;
+import com.ingreatsol.allweights.common.AllweightsUtils;
 import com.ingreatsol.allweights.scan.AllweightsBluetoothScan;
 import com.ingreatsol.allweights.scan.AllweightsScan;
 import com.ingreatsol.allweights.scan.AllweightsScanCallback;
-import com.ingreatsol.allweights.common.AllweightsUtils;
-import com.ingreatsol.allweights.common.AllweightsException;
 import com.ingreatsol.allweights.test.databinding.FragmentFirstBinding;
 
 import java.util.ArrayList;
@@ -185,26 +183,6 @@ public class FirstFragment extends Fragment {
                         dialogAcept.dismiss();
                     })
                     .show();
-        } else if (!bluetoothScan.isBluethoothEnabled()) {
-            new MaterialAlertDialogBuilder(context)
-                    .setTitle("Bluetooth desactivado")
-                    .setMessage("Se necesita activar el bluetooth para poder detectar dispositivos bluetooth. ¿Desea activarlo?")
-                    .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
-                    .setPositiveButton("Activar", (dialogAcept, which) -> {
-                        dialogAcept.dismiss();
-                        launchEnableBle();
-                    })
-                    .show();
-        } else if (!bluetoothScan.isLocationEnabled()) {
-            new MaterialAlertDialogBuilder(context)
-                    .setTitle("Ubicacion desactivada")
-                    .setMessage("Se necesita activar la ubicación para poder detectar dispositivos bluetooth. ¿Desea activarla?")
-                    .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
-                    .setPositiveButton("Activar", (dialogAcept, which) -> {
-                        dialogAcept.dismiss();
-                        launchEnableLocation();
-                    })
-                    .show();
         } else if (bluetoothScan.isMissingPermisionBluetooth()) {
             if (permisoDenegado) {
                 manejarDenegacionDePermiso(AllweightsUtils.Permission.BLUETOOTH);
@@ -233,6 +211,26 @@ public class FirstFragment extends Fragment {
                         })
                         .show();
             }
+        } else if (!bluetoothScan.isLocationEnabled()) {
+            new MaterialAlertDialogBuilder(context)
+                    .setTitle("Ubicacion desactivada")
+                    .setMessage("Se necesita activar la ubicación para poder detectar dispositivos bluetooth. ¿Desea activarla?")
+                    .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
+                    .setPositiveButton("Activar", (dialogAcept, which) -> {
+                        dialogAcept.dismiss();
+                        launchEnableLocation();
+                    })
+                    .show();
+        } else if (!bluetoothScan.isBluethoothEnabled()) {
+            new MaterialAlertDialogBuilder(context)
+                    .setTitle("Bluetooth desactivado")
+                    .setMessage("Se necesita activar el bluetooth para poder detectar dispositivos bluetooth. ¿Desea activarlo?")
+                    .setNeutralButton("Cancelar", (dialogCancel, which) -> dialogCancel.dismiss())
+                    .setPositiveButton("Activar", (dialogAcept, which) -> {
+                        dialogAcept.dismiss();
+                        launchEnableBle();
+                    })
+                    .show();
         } else {
             try {
                 mLeDeviceListAdapter.clear();

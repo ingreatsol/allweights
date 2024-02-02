@@ -85,7 +85,7 @@ public abstract class AllweightsBase {
         try {
             bluetooth_enabled = mBluetoothAdapter.isEnabled();
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, "isBluethoothEnabled error: ", e);
         }
         return bluetooth_enabled;
     }
@@ -127,14 +127,12 @@ public abstract class AllweightsBase {
 
     public boolean checkPermissionsIfNecessary(@NonNull String permissionSend) {
         switch (permissionSend) {
-            case "android.permission.ACCESS_FINE_LOCATION":
-            case "android.permission.ACCESS_COARSE_LOCATION":
+            case "android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION" -> {
                 if (!AllweightsUtils.isRequiredPermisionLocation()) return false;
-                break;
-            case "android.permission.BLUETOOTH_SCAN":
-            case "android.permission.BLUETOOTH_CONNECT":
+            }
+            case "android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT" -> {
                 if (AllweightsUtils.isNotRequiredPermisionBluetooth()) return false;
-                break;
+            }
         }
 
         return (ContextCompat.checkSelfPermission(context, permissionSend) != PackageManager.PERMISSION_GRANTED);

@@ -10,11 +10,15 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 34
-
+        aarMetadata {
+            minCompileSdk = 26
+        }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
-
+    testFixtures {
+        enable = true
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -27,21 +31,42 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     publishing {
-        // Publishes "fullRelease" build variant with "fullRelease" component created by
-        // Android Gradle plugin
-        singleVariant("release")
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
+        }
+
+        singleVariant('debug') {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
+    testImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 }
 
 afterEvaluate {
-    publishing{
-        publications{
-            release(MavenPublication){
-                from components.release
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                // Applies the component for the release build variant.
+                components.getByName('release')
+
+                // You can then customize attributes of the publication as shown below.
+                groupId = 'com.ingreatsol'
+                artifactId = 'allweights'
+                version = '2.4.8'
+            }
+            // Creates a Maven publication called “debug”.
+            debug(MavenPublication) {
+                // Applies the component for the debug build variant.
+                components.getByName('debug')
+
                 groupId = 'com.ingreatsol'
                 artifactId = 'allweights'
                 version = '2.4.8'

@@ -28,16 +28,10 @@ public class AllweightsBleScan extends AllweightsScan {
         discoveryCallback = new ScanCallback() {
             @SuppressLint("MissingPermission")
             @Override
-            public synchronized void onScanResult(int callbackType, ScanResult result) {
+            public void onScanResult(int callbackType, ScanResult result) {
                 super.onScanResult(callbackType, result);
-                synchronized (channelsLock) {
-                    BluetoothDevice device1 = result.getDevice();
-                    mMainHandler.post(() -> {
-                        for (AllweightsScanCallback listener : mOnAllweightsScanCallback) {
-                            listener.onFoundBluetoothDevice(device1);
-                        }
-                    });
-                }
+                BluetoothDevice device1 = result.getDevice();
+                newDevice(device1);
             }
 
             @Override
@@ -55,7 +49,7 @@ public class AllweightsBleScan extends AllweightsScan {
     @SuppressLint("MissingPermission")
     @Override
     public void stopScan() {
-        if (mScanning) {
+        if (getScanStatus()) {
             BluetoothLeScanner scanner = mBluetoothAdapter.getBluetoothLeScanner();
             scanner.stopScan(discoveryCallback);
             newScanStatus(false);

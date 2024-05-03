@@ -11,21 +11,55 @@ import androidx.annotation.RequiresPermission;
 import com.ingreatsol.allweights.common.AllweightsBase;
 import com.ingreatsol.allweights.common.AllweightsException;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 
 public abstract class AllweightsConnect extends AllweightsBase {
-    protected ConnectionStatus mConnectionStatus = ConnectionStatus.DISCONNECTED;
-    protected final ArrayList<AllweightsConnectCallback> mOnAllweightsConnectCallback;
-    protected String mBluetoothDeviceAddress;
-    protected Integer deviceType;
-    protected String entrada = "";
-    protected final BluetoothManager mBluetoothManager;
+    private final BluetoothManager mBluetoothManager;
+    private final LinkedHashSet<ConnectionStatusChangeListener> connectionStatusChangeListeners;
+    private final LinkedHashSet<DataChangeListener> dataChangeListeners;
+
+    private ConnectionStatus mConnectionStatus = ConnectionStatus.DISCONNECTED;
+    private String entrada = "";
+    private AllweightsData allweightsData;
+    private String mBluetoothDeviceAddress;
+    private Integer deviceType;
+    private final Object statusLock = new Object();
+    private final Object dataLock = new Object();
 
     public AllweightsConnect(@NonNull final Context context, String feature) {
         super(context, feature);
-        mOnAllweightsConnectCallback = new ArrayList<>();
+        connectionStatusChangeListeners = new LinkedHashSet<>();
+        dataChangeListeners = new LinkedHashSet<>();
         this.mBluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+    }
+
+    public synchronized void connect() throws AllweightsException {
+        checkBluetooth();
+
+        if (mBluetoothDeviceAddress == null || deviceType == null) {
+            throw new AllweightsException("Device not assigned");
+        }
+    }
+
+    public synchronized void disconnect() {
+        Log.d(TAG, "Disconnected " + mFeature);
+    }
+
+    public void destroy() {
+        Log.d(TAG, "destroy");
+        mBluetoothDeviceAddress = null;
+        deviceType = null;
+        entrada = null;
+        mConnectionStatus = ConnectionStatus.DISCONNECTED;
+        connectionStatusChangeListeners.clear();
+        dataChangeListeners.clear();
+    }
+
+    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+    protected boolean sendMessage(String message) {
+        Log.d(TAG, "Mesagge send: " + message);
+        return false;
     }
 
     public void setDevice(String deviceAddress, Integer deviceType) {
@@ -40,9 +74,11 @@ public abstract class AllweightsConnect extends AllweightsBase {
 
     protected void newConnectionStatus(ConnectionStatus newConnectionStatus) {
         mMainHandler.post(() -> {
-            mConnectionStatus = newConnectionStatus;
-            for (AllweightsConnectCallback listener : mOnAllweightsConnectCallback) {
-                listener.onConnectionStatusChange(mConnectionStatus);
+            synchronized (statusLock) {
+                this.mConnectionStatus = newConnectionStatus;
+                for (ConnectionStatusChangeListener listener : connectionStatusChangeListeners) {
+                    listener.onConnectionStatusChange(mConnectionStatus);
+                }
             }
         });
     }
@@ -51,24 +87,50 @@ public abstract class AllweightsConnect extends AllweightsBase {
         return mConnectionStatus;
     }
 
-    public void addOnAllweightsConnectCallback(AllweightsConnectCallback listener) {
-        if (!mOnAllweightsConnectCallback.contains(listener)) {
-            mOnAllweightsConnectCallback.add(listener);
-        }
+    public AllweightsData getAllweightsData() {
+        return allweightsData;
     }
 
-    public void removeOnAllweightsConnectCallback(AllweightsConnectCallback listener) {
-        mOnAllweightsConnectCallback.remove(listener);
+    protected String getBluetoothDeviceAddress() {
+        return mBluetoothDeviceAddress;
     }
 
-    public void clearOnAllweightsConnectCallback() {
-        mOnAllweightsConnectCallback.clear();
+    protected Integer getDeviceType() {
+        return deviceType;
+    }
+
+    protected BluetoothManager getBluetoothManager() {
+        return mBluetoothManager;
+    }
+
+    public void addOnConnectionStatusChangeListener(ConnectionStatusChangeListener listener) {
+        connectionStatusChangeListeners.add(listener);
+    }
+
+    public void removeOnConnectionStatusChangeListener(ConnectionStatusChangeListener listener) {
+        connectionStatusChangeListeners.remove(listener);
+    }
+
+    public void clearOnConnectionStatusChangeListener() {
+        connectionStatusChangeListeners.clear();
+    }
+
+    public void addOnDataChangeListener(DataChangeListener listener) {
+        dataChangeListeners.add(listener);
+    }
+
+    public void removeOnDataChangeListener(DataChangeListener listener) {
+        dataChangeListeners.remove(listener);
+    }
+
+    public void clearOnDataChangeListener() {
+        dataChangeListeners.clear();
     }
 
     /**
      * @param strReceived data recived bluetooth conection
      */
-    protected void procesardatos(String strReceived) {
+    protected synchronized void procesardatos(String strReceived) {
         if (strReceived != null) {
             try {
                 entrada = entrada + strReceived;
@@ -76,21 +138,22 @@ public abstract class AllweightsConnect extends AllweightsBase {
                 if (cont.length >= 1) {
                     String[] datos = cont[0].split(";");
                     AllweightsData bluetoothDataRecive = new AllweightsData();
-                    if (datos.length == 1) {
+                    if (datos.length >= 1) {
                         bluetoothDataRecive.weight = Float.parseFloat(datos[0]);
-                    } else if (datos.length == 2) {
-                        bluetoothDataRecive.weight = Float.parseFloat(datos[0]);
+                    }
+                    if (datos.length == 2) {
                         bluetoothDataRecive.bateryPercent = Float.parseFloat(datos[1]);
                     } else if (datos.length == 3) {
-                        bluetoothDataRecive.weight = Float.parseFloat(datos[0]);
                         bluetoothDataRecive.isEnergyConnected = Objects.equals(datos[1], "1");
                         bluetoothDataRecive.bateryPercent = Float.parseFloat(datos[2]);
                     }
                     entrada = entrada.substring(cont[0].length() + 1);
-
                     mMainHandler.post(() -> {
-                        for (AllweightsConnectCallback listener : mOnAllweightsConnectCallback) {
-                            listener.onAllweightsDataChange(bluetoothDataRecive);
+                        synchronized (dataLock){
+                            this.allweightsData = bluetoothDataRecive;
+                            for (DataChangeListener listener : dataChangeListeners) {
+                                listener.onDataChange(allweightsData);
+                            }
                         }
                     });
                 }
@@ -121,30 +184,11 @@ public abstract class AllweightsConnect extends AllweightsBase {
         return sendMessage("0;");
     }
 
-    public synchronized void connect() throws AllweightsException {
-        checkBluetooth();
-
-        if (mBluetoothDeviceAddress == null || deviceType == null) {
-            throw new AllweightsException("Device not assigned");
-        }
+    public interface ConnectionStatusChangeListener {
+        void onConnectionStatusChange(ConnectionStatus status);
     }
 
-    public synchronized void disconnect() {
-        Log.d(TAG, "Disconnected " + mFeature);
-    }
-
-    public void destroy() {
-        Log.d(TAG, "destroy");
-        mBluetoothDeviceAddress = null;
-        deviceType = null;
-        entrada = null;
-        mConnectionStatus = ConnectionStatus.DISCONNECTED;
-        mOnAllweightsConnectCallback.clear();
-    }
-
-    @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-    protected boolean sendMessage(String message) {
-        Log.d(TAG, "Mesagge send: " + message);
-        return false;
+    public interface DataChangeListener {
+        void onDataChange(AllweightsData data);
     }
 }

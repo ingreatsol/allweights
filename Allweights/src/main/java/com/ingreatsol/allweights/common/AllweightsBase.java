@@ -22,7 +22,6 @@ public abstract class AllweightsBase {
     protected final Context context;
     protected final BluetoothAdapter mBluetoothAdapter;
     protected final Handler mMainHandler;
-    protected final Object channelsLock = new Object();
     protected final String mFeature;
 
     public AllweightsBase(Context context, String feature) {

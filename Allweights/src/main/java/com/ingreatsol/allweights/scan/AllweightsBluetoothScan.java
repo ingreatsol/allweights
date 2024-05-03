@@ -25,13 +25,7 @@ public class AllweightsBluetoothScan extends AllweightsScan {
                 String action = intent.getAction();
                 if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    synchronized (channelsLock) {
-                        mMainHandler.post(() -> {
-                            for (AllweightsScanCallback listener : mOnAllweightsScanCallback) {
-                                listener.onFoundBluetoothDevice(device);
-                            }
-                        });
-                    }
+                    newDevice(device);
                 }
             }
         };
@@ -63,7 +57,7 @@ public class AllweightsBluetoothScan extends AllweightsScan {
     @Override
     public void stopScan() {
         super.stopScan();
-        if (mScanning) {
+        if (getScanStatus()) {
             mBluetoothAdapter.cancelDiscovery();
             newScanStatus(false);
         }

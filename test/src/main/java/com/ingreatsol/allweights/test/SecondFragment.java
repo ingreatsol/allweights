@@ -18,9 +18,6 @@ import androidx.fragment.app.Fragment;
 import com.ingreatsol.allweights.connect.AllweightsBleConnect;
 import com.ingreatsol.allweights.connect.AllweightsBluetoothConnect;
 import com.ingreatsol.allweights.connect.AllweightsConnect;
-import com.ingreatsol.allweights.connect.AllweightsData;
-import com.ingreatsol.allweights.connect.ConnectionStatus;
-import com.ingreatsol.allweights.connect.AllweightsConnectCallback;
 import com.ingreatsol.allweights.test.databinding.FragmentSecondBinding;
 
 public class SecondFragment extends Fragment {
@@ -28,30 +25,24 @@ public class SecondFragment extends Fragment {
     private FragmentSecondBinding binding;
     private AllweightsConnect allweightsConnect;
 
-    AllweightsConnectCallback onAllweightsConnectCallback = new AllweightsConnectCallback() {
-        @SuppressLint("SetTextI18n")
-        @Override
-        public void onAllweightsDataChange(@NonNull AllweightsData data) {
-            binding.textviewPeso.setText(data.weight.toString());
-            if (Boolean.TRUE.equals(data.isEnergyConnected)) {
-                binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
+    private final AllweightsConnect.DataChangeListener dataChangeListener = data -> {
+        binding.textviewPeso.setText(data.weight.toString());
+        if (Boolean.TRUE.equals(data.isEnergyConnected)) {
+            binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
+        } else {
+            if (data.bateryPercent != null && RANGO_MINIMO_BATERIA < data.bateryPercent) {
+                binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.RED));
             } else {
-                if (data.bateryPercent != null && RANGO_MINIMO_BATERIA < data.bateryPercent) {
-                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.RED));
-                } else {
-                    binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
-                }
-            }
-            if (data.bateryPercent != null) {
-                binding.progressbar.setProgress((int) (((data.bateryPercent - RANGO_MINIMO_BATERIA) / LIMITE_BATERIA) * 100));
+                binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
             }
         }
-
-        @Override
-        public void onConnectionStatusChange(@NonNull ConnectionStatus status) {
-            binding.textViewEstado.setText(status.toString());
+        if (data.bateryPercent != null) {
+            binding.progressbar.setProgress((int) (((data.bateryPercent - RANGO_MINIMO_BATERIA) / LIMITE_BATERIA) * 100));
         }
     };
+
+    private final AllweightsConnect.ConnectionStatusChangeListener statusChangeListener =
+            status -> binding.textViewEstado.setText(status.toString());
 
     @Override
     public View onCreateView(
@@ -66,10 +57,9 @@ public class SecondFragment extends Fragment {
         String deviceAddres = getArguments().getString("deviceAddress");
         int deviceType = getArguments().getInt("deviceType");
 
-        if (deviceType == 1){
+        if (deviceType == 1) {
             allweightsConnect = new AllweightsBluetoothConnect(requireActivity());
-        }
-        else {
+        } else {
             allweightsConnect = new AllweightsBleConnect(requireActivity());
         }
 
@@ -113,14 +103,16 @@ public class SecondFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        allweightsConnect.addOnAllweightsConnectCallback(onAllweightsConnectCallback);
+        allweightsConnect.addOnConnectionStatusChangeListener(statusChangeListener);
+        allweightsConnect.addOnDataChangeListener(dataChangeListener);
         connect();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        allweightsConnect.removeOnAllweightsConnectCallback(onAllweightsConnectCallback);
+        allweightsConnect.removeOnConnectionStatusChangeListener(statusChangeListener);
+        allweightsConnect.removeOnDataChangeListener(dataChangeListener);
         allweightsConnect.disconnect();
     }
 

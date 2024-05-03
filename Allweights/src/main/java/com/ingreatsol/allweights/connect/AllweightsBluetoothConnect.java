@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
-public class AllweightsBluetoothConnect extends AllweightsConnect {
+public final class AllweightsBluetoothConnect extends AllweightsConnect {
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     // Member fields
@@ -42,7 +42,7 @@ public class AllweightsBluetoothConnect extends AllweightsConnect {
     })
     public synchronized void connect() throws AllweightsException {
         super.connect();
-        Log.d(TAG, "connect to: " + mBluetoothDeviceAddress);
+        Log.d(TAG, "connect to: " + getBluetoothDeviceAddress());
 
         // Cancel any thread attempting to make a connection
         if (getConnectionStatus() == ConnectionStatus.CONNECTING) {
@@ -149,12 +149,14 @@ public class AllweightsBluetoothConnect extends AllweightsConnect {
                 "android.permission.BLUETOOTH_SCAN"
         })
         public ConnectThread() {
-            BluetoothDevice mmDevice = mBluetoothAdapter.getRemoteDevice(mBluetoothDeviceAddress);
+            BluetoothDevice mmDevice = mBluetoothAdapter.getRemoteDevice(
+                    getBluetoothDeviceAddress()
+            );
             BluetoothSocket tmp = null;
 
             // Get a BluetoothSocket for a connection with the
             try {
-                if (deviceType > 1) {
+                if (getDeviceType() > 1) {
                     mSocketType = "Secure";
                     tmp = mmDevice.createRfcommSocketToServiceRecord(myUUID);
                 } else {

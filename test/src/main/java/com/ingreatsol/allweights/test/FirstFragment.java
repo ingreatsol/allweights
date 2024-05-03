@@ -25,7 +25,6 @@ import com.ingreatsol.allweights.common.AllweightsException;
 import com.ingreatsol.allweights.common.AllweightsUtils;
 import com.ingreatsol.allweights.scan.AllweightsBluetoothScan;
 import com.ingreatsol.allweights.scan.AllweightsScan;
-import com.ingreatsol.allweights.scan.AllweightsScanCallback;
 import com.ingreatsol.allweights.test.databinding.FragmentFirstBinding;
 
 import java.util.ArrayList;
@@ -85,17 +84,11 @@ public class FirstFragment extends Fragment {
         binding.dispositivos.setAdapter(mLeDeviceListAdapter);
 
         binding.button.setOnClickListener(l -> scanear());
-        bluetoothScan.addOnAllweightsScanCallback(new AllweightsScanCallback() {
-            @Override
-            public void onFoundBluetoothDevice(BluetoothDevice device) {
-                mLeDeviceListAdapter.addDevice(device);
-            }
 
-            @Override
-            public void onAllweightsScanStatusChange(Boolean status) {
-                binding.progressBar.setVisibility(status ? View.VISIBLE : View.GONE);
-                binding.button.setVisibility(status ? View.GONE : View.VISIBLE);
-            }
+        bluetoothScan.addOnScanDeviceListener(device -> mLeDeviceListAdapter.addDevice(device));
+        bluetoothScan.addOnScanStatusChangeListener(status -> {
+            binding.progressBar.setVisibility(status ? View.VISIBLE : View.GONE);
+            binding.button.setVisibility(status ? View.GONE : View.VISIBLE);
         });
     }
 
@@ -243,7 +236,7 @@ public class FirstFragment extends Fragment {
 
     private void manejarDenegacionDePermiso(@NonNull String... permissionSend) {
         ArrayList<String> permissionsShould = AllweightsUtils.shouldMapPermission(requireActivity(), permissionSend);
-        if (permissionsShould.size() > 0) {
+        if (!permissionsShould.isEmpty()) {
             new MaterialAlertDialogBuilder(requireActivity())
                     .setTitle("Estas seguro?")
                     .setMessage("Allweights no puede funcionar correctamente si deniegas este permiso")

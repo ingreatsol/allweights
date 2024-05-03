@@ -60,7 +60,7 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.ingreatsol'
                 artifactId = 'allweights'
-                version = '2.4.8'
+                version = '2.4.9'
             }
             // Creates a Maven publication called “debug”.
             debug(MavenPublication) {
@@ -69,7 +69,7 @@ afterEvaluate {
 
                 groupId = 'com.ingreatsol'
                 artifactId = 'allweights'
-                version = '2.4.8'
+                version = '2.4.9'
             }
         }
     }

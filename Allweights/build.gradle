@@ -50,7 +50,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.ingreatsol'
                 artifactId = 'allweights'
-                version = '2.4.9'
+                version = '2.5.0'
             }
         }
     }

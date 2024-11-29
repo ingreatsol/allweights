@@ -73,67 +73,22 @@ public abstract class AllweightsBase {
 
     @NonNull
     public Boolean isLocationEnabled() {
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        return LocationManagerCompat.isLocationEnabled(locationManager);
+        return AllweightsUtils.isLocationEnabled(context);
     }
 
     public Boolean isBluethoothEnabled() {
-
-        boolean bluetooth_enabled = false;
-
-        try {
-            bluetooth_enabled = mBluetoothAdapter.isEnabled();
-        } catch (Exception e) {
-            Log.e(TAG, "isBluethoothEnabled error: ", e);
-        }
-        return bluetooth_enabled;
+        return AllweightsUtils.isBluethoothEnabled();
     }
 
-
     public boolean isMissingPermisionBluetooth() {
-        if (AllweightsUtils.isNotRequiredPermisionBluetooth()) {
-            return false;
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return Arrays.stream(AllweightsUtils.Permission.BLUETOOTH).anyMatch(this::checkPermissionsIfNecessary);
-        } else {
-            for (String permission : AllweightsUtils.Permission.BLUETOOTH) {
-                if (checkPermissionsIfNecessary(permission)) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        return AllweightsUtils.isMissingPermisionBluetooth(context);
     }
 
     public boolean isMissingPermisionLocation() {
-        if (!AllweightsUtils.isRequiredPermisionLocation()) {
-            return false;
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return Arrays.stream(AllweightsUtils.Permission.LOCATION()).anyMatch(this::checkPermissionsIfNecessary);
-        } else {
-            for (String permission : AllweightsUtils.Permission.LOCATION()) {
-                if (checkPermissionsIfNecessary(permission)) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        return AllweightsUtils.isMissingPermisionLocation(context);
     }
 
     public boolean checkPermissionsIfNecessary(@NonNull String permissionSend) {
-        switch (permissionSend) {
-            case "android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION" -> {
-                if (!AllweightsUtils.isRequiredPermisionLocation()) return false;
-            }
-            case "android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT" -> {
-                if (AllweightsUtils.isNotRequiredPermisionBluetooth()) return false;
-            }
-        }
-
-        return (ContextCompat.checkSelfPermission(context, permissionSend) != PackageManager.PERMISSION_GRANTED);
+        return AllweightsUtils.checkPermissionsIfNecessary(permissionSend, context);
     }
 }

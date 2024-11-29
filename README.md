@@ -45,13 +45,6 @@ The library requires location and blueooth permissions to work. In the manifest 
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
-In addition, the following service should be added.
-```xml
-<service
-    android:name="com.ingreatsol.allweights.AllweightsBluetoothLeService"
-    android:enabled="true"
-    android:exported="false" />
-```
 ## Scan Allweights
 To connect to Allweights we need a bluetooth object `BluetoothDevice`, for this we must implement a bluetooth device search to find the bluetooth of the scale.
 
@@ -81,38 +74,27 @@ To do this, the first thing to do is to create a `layout` file (name listitem_de
         android:textSize="16sp" />
 </LinearLayout>
 ```
-In a fragment or activity, instantiate the `AllweightsScan` class and execute the `init` method in `onCreate` that receives the context of the activity and the layout we created earlier.
+In a fragment or activity, instantiate the `AllweightsScan` class in `onCreate` that receives the context of the activity and the layout we created earlier.
+
+`AllweightsScan` is an abstract class that can be implemented with `AllweightsBluetoothScan` for classic bluetooth or `AllweightsBleScan` for low energy bluetooth (ble).
 ```xml
-AllweightsScan bluetoothScan = new AllweightsScan();
+AllweightsScan bluetoothScan = new AllweightsBluetoothScan(requireActivity());
 
-LeDeviceListAdapter mLeDeviceListAdapter = new LeDeviceListAdapter(requireActivity(),
-                R.layout.listitem_device,
-                R.id.device_address,
-                R.id.device_name);
+LeDeviceListAdapter mLeDeviceListAdapter = new LeDeviceListAdapter();
 
-bluetoothScan.getDevices().observe(requireActivity(), devices -> {
-            mLeDeviceListAdapter.clear();
-            mLeDeviceListAdapter.addDevices(devices);
-            mLeDeviceListAdapter.notifyDataSetChanged();
-        });
+bluetoothScan.addOnScanDeviceListener(device -> mLeDeviceListAdapter.addDevice(device));
 ```
 To start the bluetooths scan, you have to use the `scan` method, and to stop it, with the `stopScan` method (you must have enabled all the permissions needed to perform the scan before).
 ```java
 bluetoothScan.scan(this);
 bluetoothScan.stopScan();
 ```
-To know the status of the scan, the `getScanState` method is used, which returns a `LiveData` to which an `Observer` object must be assigned.
+To know the scan status, the `addOnScanStatusChangeListener` method is used, which receives a `ScanStatusChangeListener` to get the changes in the scan status.
 ```java
-Observer<Boolean> estadoCOnexionObserve = new Observer<Boolean>() {
-        @Override
-        public void onChanged(Boolean estado) {
-            Toast.makeText(requireActivity(), estado.toString(), Toast.LENGTH_LONG).show();
-            binding.progressBar.setVisibility(estado ? View.VISIBLE : View.GONE);
-            binding.button.setVisibility(estado ? View.GONE : View.VISIBLE);
-        }
-    };
-    
-bluetoothScan.getScanState().observe(this, estadoCOnexionObserve);
+bluetoothScan.addOnScanStatusChangeListener(status -> {
+    binding.progressBar.setVisibility(status ? View.VISIBLE : View.GONE);
+    binding.button.setVisibility(status ? View.GONE : View.VISIBLE);
+});
 ```
 In the xml file of the fragment or activity you have to add a list where the bluetooth devices will be represented.
 ```xml
@@ -152,34 +134,34 @@ In the xml file of the fragment or activity you have to add a list where the blu
 And assign the `Adapter` object of the library to that list
 ```java
 binding.dispositivos.setOnItemClickListener((parent, _view, position, id) -> {
-            try {
-                final BluetoothDevice device = bluetoothScan.getDevice(position);
+    try {
+        final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
 
-                if (device == null) return;
+        if (device == null) return;
 
-                bluetoothScan.cancelDiscovery();
+        bluetoothScan.stopScan();
 
-                Intent intent = new Intent(this, SecondActivity.class);
-                intent.putExtra("deviceAddress", device.getAddress());
-                intent.putExtra("deviceType", device.getType());
-                startActivity(intent);
-                finish();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        Bundle b = new Bundle();
+        b.putString("deviceAddress", device.getAddress());
+        b.putInt("deviceType", device.getType());
 
-        binding.dispositivos.setAdapter(bluetoothScan.getmLeDeviceListAdapter());
+        NavHostFragment.findNavController(FirstFragment.this)
+                .navigate(R.id.action_FirstFragment_to_SecondFragment, b);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+});
 
-        binding.button.setOnClickListener(l -> bluetoothScan.scan(this));
+binding.dispositivos.setAdapter(mLeDeviceListAdapter);
+
+binding.button.setOnClickListener(l -> scanear());
 ```
 Override methods 
 ```java
 @Override
     public void onResume() {
         super.onResume();
-        bluetoothScan.getScanState().observe(requireActivity(), estadoCOnexionObserve);
-        bluetoothScan.scan(requireActivity());
+        bluetoothScan.scan();
     }
     
     @SuppressLint("MissingPermission")
@@ -187,80 +169,90 @@ Override methods
     public void onPause() {
         super.onPause();
         bluetoothScan.stopScan();
-        bluetoothScan.getScanState().removeObserver(estadoCOnexionObserve);
     }
 ```
 
 ## Connect to allweights
 To connect to allweights you have to instantiate the `AllweightsConnect` object and assign the mac and device type previously passed with the `setDevice` method.
+
+AllweightsConnect is an abstract class that can be implemented with `AllweightsBluetoothConnect` for classic bluetooth or `AllweightsBleightsConnect` for low energy (ble) bluetooth.
 ```java
 // In fragments paste this code in the `onCreateView` method
         
-AllweightsConnect   allweightsConnect = new AllweightsConnect();
-
 String deviceAddres = getArguments().getString("deviceAddress");
-Integer deviceType = getArguments().getInt("deviceType");
+        int deviceType = getArguments().getInt("deviceType");
+
+if (deviceType == 1) {
+    allweightsConnect = new AllweightsBluetoothConnect(requireActivity());
+} else {
+    allweightsConnect = new AllweightsBleConnect(requireActivity());
+}
 
 allweightsConnect.setDevice(deviceAddres, deviceType);
 ```
 ```java
 //In activities paste this code in the `onCreate` method
 
-AllweightsConnect allweightsConnect = new AllweightsConnect();
-
 String deviceAddres = getIntent().getExtras().getString("deviceAddress");
-Integer deviceType = getIntent().getExtras().getInt("deviceType");
+int deviceType = getIntent().getExtras().getInt("deviceType");
+AllweightsConnect allweightsConnect = null;
+if (deviceType == 1) {
+    allweightsConnect = new AllweightsBluetoothConnect(this);
+} else {
+    allweightsConnect = new AllweightsBleConnect(this);
+}
 
 allweightsConnect.setDevice(deviceAddres, deviceType);
 ```
-### Method `getData`
-The `getData` method returns a `LiveData` object to which an observer must be assigned to update the weights of the scales.
+To initiate the connection, use the `connect` method in `onResume` and the `disconnect` method in `onPause`.
+```
+//in onResume
+allweightsConnect.connect();
+//in onPause
+allweightsConnect.disconnect();
+//in onDestroy
+allweightsConnect.destroy();
+```
+### Method `addOnDataChangeListener`
+The `addOnDataChangeListener` method receives a `DataChangeListener` that receives the updates of the balance weights.
 ```java
-private final Observer<AllweightsData> dataObserver = new Observer<AllweightsData>() {
-        @SuppressLint("SetTextI18n")
-        @Override
-        public void onChanged(@NonNull AllweightsData allweightsData) {
-            //Here are the weights of the allweights scale
-            Toast.makeText(requireActivity(), allweightsData.toString(), Toast.LENGTH_LONG).show();
+private final AllweightsConnect.DataChangeListener dataChangeListener = data -> {
+        binding.textviewPeso.setText(data.weight.toString());
+        if (Boolean.TRUE.equals(data.isEnergyConnected)) {
+            binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
+        } else {
+            if (data.bateryPercent != null && RANGO_MINIMO_BATERIA < data.bateryPercent) {
+                binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.RED));
+            } else {
+                binding.progressbar.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
+            }
+        }
+        if (data.bateryPercent != null) {
+            binding.progressbar.setProgress((int) (((data.bateryPercent - RANGO_MINIMO_BATERIA) / LIMITE_BATERIA) * 100));
         }
     };
     
 //in onResume
-allweightsConnect.getData().observe(this, dataObserver);
+allweightsConnect.addOnDataChangeListener(dataChangeListener);
 //in onPause
-allweightsConnect.getData().removeObserver(dataObserver);
+allweightsConnect.removeOnDataChangeListener(dataChangeListener);
 ```
-The observer sends an `AllweightsData` object which contains:
+The `DataChangeListener` uses a method that returns an `AllweightsData` object containing the information obtained from the bullet:
  
 1.  `weight`: A numeric value indicating the current weight of the scale.
 2.  `isEnergyConnected`: A boolean value indicating whether the scale is connected to electricity.
 3.  `bateryPercent`: A numeric value indicating the battery charge.
 
-### Method `registerService`
-The `registerService` method tells the previously started service to start receiving data and send it to the `getData` observer.
-
-```java
-// in onResume
-allweightsConnect.registerService(this);
-// in onPause
-allweightsConnect.unRegisterService(this);
-//in onDestroy
-allweightsConnect.destroyService(this);
-```
 ### Method `getConnectionStatus`
 The `getConnectionStatus` method returns a `LiveData` object to which a observer must be assigned to receive the connection status between the allweights scale and the android device.
 ```java
-private final Observer<ConnectionStatus> estadoConexionObserve = new Observer<ConnectionStatus>() {
-        @Override
-        public void onChanged(@NonNull ConnectionStatus estado) {
-            Toast.makeText(requireActivity(), estado.toString(), Toast.LENGTH_LONG).show();
-        }
-    };
+    private final AllweightsConnect.ConnectionStatusChangeListener statusChangeListener =
+            status -> binding.textViewEstado.setText(status.toString());
       
 // in onResume
-allweightsConnect.getConnectionStatus().observe(this, estadoConexionObserve);
+allweightsConnect.addOnConnectionStatusChangeListener(statusChangeListener);
 // in onPause
-allweightsConnect.getConnectionStatus().removeObserver(estadoConexionObserve);
+allweightsConnect.removeOnConnectionStatusChangeListener(statusChangeListener);
 ```
 The observer sends an `enum` object `ConnectionStatus` which can be:
 1. `CONNECTED`: The device is connected to the scale and is receiving data.
